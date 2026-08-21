@@ -1,0 +1,103 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Tracker from '../components/Tracker.astro';
+import { songs } from '../data/songs';
+const greenCount = songs.filter((s) => s.status === 'green').length;
+const warmCount = songs.filter((s) => s.status === 'warm').length;
+const dustyCount = songs.filter((s) => s.status === 'dusty').length;
+const coldCount = songs.filter((s) => s.status === 'cold').length;
+const initialDays = Math.max(0, Math.ceil((new Date('2026-10-09T00:00:00-05:00').getTime() - Date.now()) / 86400000));
+---
+
+<Layout title="Dashboard">
+	<script>
+	// Client-side countdown that updates live (island).
+	const GIG = '2026-10-09T00:00:00-05:00';
+	function tick() {
+		const el = document.getElementById('countdown');
+		if (!el) return;
+		const now = new Date();
+		const target = new Date(GIG);
+		now.setHours(0, 0, 0, 0);
+		target.setHours(0, 0, 0, 0);
+		const d = Math.ceil((target.getTime() - now.getTime()) / 86400000);
+		if (d < 0) el.textContent = 'Gig done';
+		else if (d === 0) el.textContent = "Tonight's the gig 🎸";
+		else if (d === 1 || d === 2) el.textContent = 'Rest day — no practice';
+		else el.textContent = `${d} days to the gig`;
+	}
+	function init() {
+		tick();
+		setInterval(tick, 60_000);
+	}
+	init();
+
+	// Warm-up checklist persistence.
+	const WARMUP_KEY = 'learn-bass:warmup:v1';
+	function initWarmup() {
+		const saved = JSON.parse(localStorage.getItem(WARMUP_KEY) || '{}');
+		document.querySelectorAll<HTMLInputElement>('.checklist input').forEach((cb) => {
+			cb.checked = !!saved[cb.dataset.k!];
+		});
+	}
+	function listenWarmup() {
+		document.querySelectorAll<HTMLInputElement>('.checklist input').forEach((cb) => {
+			cb.addEventListener('change', () => {
+				const saved = JSON.parse(localStorage.getItem(WARMUP_KEY) || '{}');
+				saved[cb.dataset.k!] = cb.checked;
+				localStorage.setItem(WARMUP_KEY, JSON.stringify(saved));
+			});
+		});
+	}
+	initWarmup();
+	listenWarmup();
+</script>
+
+<main class="wrap">
+	<h1>Welcome back to the bass.</h1>
+	<p class="lead">
+		Seven weeks to a Friday-night gig, <span data-date>October 9, 2026 at Canyon Lake</span>. One song at a time —
+		roots, groove, and the hooks people recognize. No charts, no panic.
+	</p>
+
+	<div class="stat-grid">
+		<div class="stat"><div class="num" id="countdown">{initialDays} days</div><div class="lbl">until the gig</div></div>
+		<div class="stat"><div class="num" id="count-green">{greenCount}</div><div class="lbl">green</div></div>
+		<div class="stat"><div class="num" id="count-warm">{warmCount}</div><div class="lbl">warm</div></div>
+		<div class="stat"><div class="num" id="count-dusty">{dustyCount}</div><div class="lbl">dusty</div></div>
+		<div class="stat"><div class="num" id="count-cold">{coldCount}</div><div class="lbl">cold</div></div>
+	</div>
+
+	<div class="card next-card" id="what-now">
+		<!-- populated by Tracker's script -->
+	</div>
+
+	<Tracker />
+
+	<div class="card">
+		<h2>Daily warm-up · 45-60 min</h2>
+		<ul class="checklist">
+			<li>
+				<input type="checkbox" id="wu-0" data-k="0" />
+				<span><span class="lbl">Stretch hands & forearms, spider 1-2-3-4</span> <span class="step">5 min</span></span>
+			</li>
+			<li>
+				<input type="checkbox" id="wu-1" data-k="1" />
+				<span><span class="lbl">Right-hand alternation + muted groove</span> <span class="step">5 min</span></span>
+			</li>
+			<li>
+				<input type="checkbox" id="wu-2" data-k="2" />
+				<span><span class="lbl">Scales / arpeggios with metronome</span> <span class="step">10 min</span></span>
+			</li>
+			<li>
+				<input type="checkbox" id="wu-3" data-k="3" />
+				<span><span class="lbl">Song work — loop the hard part</span> <span class="step">25 min</span></span>
+			</li>
+			<li>
+				<input type="checkbox" id="wu-4" data-k="4" />
+				<span><span class="lbl">Play something you love (Jude Law!)</span> <span class="step">5 min</span></span>
+			</li>
+		</ul>
+	</div>
+</main>
+</Layout>

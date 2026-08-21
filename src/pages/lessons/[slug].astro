@@ -1,0 +1,44 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { songs } from '../../data/songs';
+import { getLesson } from '../../lib/lessons';
+import { url } from '../../lib/url';
+
+export function getStaticPaths() {
+	// One page per song, plus orientation.
+	const paths = [
+		{ params: { slug: 'orientation' }, props: { isOrientation: true } },
+		...songs.map((s) => ({ params: { slug: s.slug }, props: { isOrientation: false } })),
+	];
+	return paths;
+}
+
+const { slug } = Astro.params;
+const { isOrientation } = Astro.props as { isOrientation: boolean };
+const lesson = getLesson(slug ?? '');
+const song = songs.find((s) => s.slug === slug);
+---
+
+<Layout title={song?.title ?? 'Orientation'}>
+	<main class="wrap">
+		<nav style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;">
+			<a href={url('lessons/')}>← all lessons</a>
+		</nav>
+
+		<article class="lesson-body">
+			<Fragment set:html={lesson?.html} />
+		</article>
+
+		{song && (
+			<div class="card" style="margin-top:2rem;">
+				<h2 style="margin-top:0;">Mark this song's status</h2>
+				<p class="muted">Come back to the dashboard and set <strong>{song.title}</strong> to green when you've hit the bar.</p>
+				<a href={url('')}>→ dashboard</a>
+			</div>
+		)}
+	</main>
+</Layout>
+
+<style>
+	@import '../../styles/lesson.css';
+</style>

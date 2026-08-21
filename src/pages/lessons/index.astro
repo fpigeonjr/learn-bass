@@ -1,0 +1,47 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { songs } from '../../data/songs';
+import { url } from '../../lib/url';
+---
+
+<Layout title="Lessons">
+	<main class="wrap">
+		<h1>Lessons</h1>
+		<p class="lead">One song per lesson. Each covers the form, root motion, signature hooks, the hard part, tempo ramp, feel, and memory cues.</p>
+
+		<div class="card">
+			<ul class="board">
+				<li>
+					<span class="order">00</span>
+					<div class="info">
+						<div class="title">Orientation</div>
+						<div class="artist">The mission, the daily session, and how to use this course</div>
+					</div>
+					<a href={url('lessons/orientation/')}>open</a>
+				</li>
+			</ul>
+		</div>
+
+		<div class="card">
+			<ul class="board">
+				{songs.map((s) => (
+					<li>
+						<span class="order">{String(s.order).padStart(2, '0')}</span>
+						<div class="info">
+							<div class="title">
+								{s.title}
+								{s.tier === 'backup' && <span class="badge backup">backup</span>}
+							</div>
+							<div class="artist">{s.artist}</div>
+						</div>
+						{s.hasLesson ? (
+							<a href={url(`lessons/${s.slug}/`)}>open</a>
+						) : (
+							<span class="pill">coming soon</span>
+						)}
+					</li>
+				))}
+			</ul>
+		</div>
+	</main>
+</Layout>

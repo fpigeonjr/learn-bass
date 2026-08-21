@@ -1,0 +1,16 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { url } from '../../lib/url';
+import { readCourseFile } from '../../lib/course';
+
+const glossaryMd = readCourseFile('GLOSSARY.md');
+---
+
+<Layout title="Glossary">
+	<main class="wrap">
+		<nav style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;"><a href={url("reference/")}>← all reference</a></nav>
+		<article class="course-article">
+			<pre style="white-space:pre-wrap;font-family:inherit;background:none;border:none;padding:0;">{glossaryMd}</pre>
+		</article>
+	</main>
+</Layout>

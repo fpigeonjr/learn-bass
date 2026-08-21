@@ -1,0 +1,56 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { url } from '../../lib/url';
+---
+
+<Layout title="Scales & Arpeggios">
+	<main class="wrap">
+		<nav style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;"><a href={url("reference/")}>← all reference</a></nav>
+		<article class="course-article">
+			<h1>Scales &amp; arpeggios</h1>
+			<p class="muted">The map that serves the setlist. Each scale is tied to the songs that need it.</p>
+
+			<h2>E minor pentatonic</h2>
+			<p>Plush, Wicked Garden, Cumbersome, My Own Worst Enemy.</p>
+			<div class="tab">E  | G A |
+A  | D E |
+   (root E — frets 0/2/3 on E string, 0/2 on A string)</div>
+
+			<h2>Blues scale (E)</h2>
+			<p>Adds the ♭5 for fills over the pentatonic core.</p>
+			<div class="tab">E | G A B♭ B D</div>
+
+			<h2>G major</h2>
+			<p>Faithfully (key of G), Say It Ain't So.</p>
+			<div class="tab">G A B C D E F♯</div>
+
+			<h2>A minor</h2>
+			<p>Interstate Love Song (Am–F–C–G, i–VI–III–VII).</p>
+			<div class="tab">A B C D E F G</div>
+
+			<h2>Arpeggios</h2>
+			<p>The real bass language — chord tones. Major, minor, dominant 7. DeLeo's lines are built from these.</p>
+		</article>
+	</main>
+</Layout>
+
+<style>
+	.course-article {
+		max-width: 42rem;
+		font-family: Georgia, 'Times New Roman', serif;
+		font-size: 18px;
+		line-height: 1.65;
+	}
+	.course-article .tab {
+		font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+		white-space: pre;
+		background: var(--panel-2);
+		border: 1px solid var(--rule);
+		border-radius: 6px;
+		padding: 1rem 1.2rem;
+		overflow-x: auto;
+		line-height: 1.7;
+		display: block;
+		margin: 0.5rem 0 1.25rem;
+	}
+</style>

@@ -1,0 +1,61 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { url } from '../../lib/url';
+---
+
+<Layout title="Warm-ups & Right Hand">
+	<main class="wrap">
+		<nav style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;"><a href={url("reference/")}>← all reference</a></nav>
+		<article class="course-article">
+			<h1>Warm-ups &amp; right hand</h1>
+			<p class="muted">The daily 5-10 minute opener. Slow and clean beats fast.</p>
+
+			<h2>Hands &amp; forearm (0-5 min)</h2>
+			<ul>
+				<li>Finger stretches — spread and relax each finger, hold 5s</li>
+				<li>Wrist circles, both directions</li>
+				<li>Spider: <span class="tab">1-2-3-4 up the strings / 4-3-2-1 back</span> one finger per fret, metronome 60</li>
+			</ul>
+
+			<h2>Right-hand alternation (5-10 min)</h2>
+			<ul>
+				<li>Index-middle alternation on open strings, steady and even</li>
+				<li>Muted-string groove at 80 bpm — dead notes, feel the pocket</li>
+			</ul>
+
+			<h2>Digital permutations (from Lesson 1 — Greg Norris)</h2>
+			<p>All 24 orderings of fingers 1-2-3-4. Pick 3 a day.</p>
+			<div class="tab">
+1xxx: 1234  1243  1324  1342  1423  1432
+2xxx: 2134  2143  2314  2341  2413  2431
+3xxx: 3124  3142  3214  3241  3412  3421
+4xxx: 4123  4132  4213  4231  4312  4321
+			</div>
+			<ul>
+				<li><strong>No trumpet fingers</strong> — stay close to the fretboard</li>
+				<li>Say the finger number aloud as you play</li>
+			</ul>
+		</article>
+	</main>
+</Layout>
+
+<style>
+	.course-article {
+		max-width: 42rem;
+		font-family: Georgia, 'Times New Roman', serif;
+		font-size: 18px;
+		line-height: 1.65;
+	}
+	.course-article .tab {
+		font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+		white-space: pre;
+		background: var(--panel-2);
+		border: 1px solid var(--rule);
+		border-radius: 6px;
+		padding: 1rem 1.2rem;
+		overflow-x: auto;
+		line-height: 1.7;
+		display: block;
+		margin: 1rem 0;
+	}
+</style>

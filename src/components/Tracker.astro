@@ -1,0 +1,113 @@
+---
+import { songs, nextSong } from '../data/songs';
+
+// Expose server data to the client script (avoids re-parsing / duplication).
+const initialSongs = songs;
+
+// Server render the board fresh; the script below hydrates state from localStorage.
+const STORAGE_KEY = 'learn-bass:status:v1';
+const statusOrder = ['cold', 'dusty', 'warm', 'green'] as const;
+---
+
+<section class="card" id="tracker">
+	<h2>Setlist board</h2>
+	<p class="muted">Tap a status to update. Green = roots + groove + hooks from memory.</p>
+	<ul class="board">
+		{songs.map((s, i) => (
+			<li data-slug={s.slug}>
+				<span class="order">{String(s.order).padStart(2, '0')}</span>
+				<div class="info">
+					<div class="title">
+						{s.title}
+						{s.tier === 'backup' && <span class="badge backup">backup</span>}
+					</div>
+					<div class="artist">{s.artist}</div>
+				</div>
+				<div class="status" data-status={s.status}>
+					{statusOrder.map((st) => (
+						<button data-set={st}>{st}</button>
+					))}
+				</div>
+			</li>
+		))}
+	</ul>
+</section>
+
+<script define:vars={{ initialSongs, nextSong, BASE: import.meta.env.BASE_URL }}>
+	const SONGS = initialSongs;
+	const BASE_URL = BASE;
+
+	const KEY = 'learn-bass:status:v1';
+	const STATUSES = ['cold', 'dusty', 'warm', 'green'];
+
+	function load() {
+		try {
+			return JSON.parse(localStorage.getItem(KEY) || '{}');
+		} catch {
+			return {};
+		}
+	}
+
+	function save(state: Record<string, string>) {
+		localStorage.setItem(KEY, JSON.stringify(state));
+	}
+
+	function applyStatuses() {
+		const saved = load();
+		document.querySelectorAll<HTMLElement>('[data-slug]').forEach((li) => {
+			const slug = li.dataset.slug!;
+			const status = saved[slug] || li.querySelector<HTMLElement>('.status')?.dataset.status || 'cold';
+			li.querySelector<HTMLElement>('.status')!.dataset.status = status;
+			li.querySelectorAll('button').forEach((b) => {
+				b.classList.toggle('active', b.dataset.set === status);
+			});
+		});
+		renderNext();
+		renderCounts();
+	}
+
+	function renderNext() {
+		const target = document.getElementById('what-now');
+		if (!target) return;
+		const state = load();
+		const active = SONGS.map((s) => ({ ...s, status: state[s.slug] || s.status }));
+		const next = nextSong(active);
+		if (!next) {
+			target.innerHTML =
+				'<span class="label">What now</span><div class="title">Full-set run 🎸</div><div class="artist">All songs green — play the whole set in running order.</div>';
+			return;
+		}
+		const href = next.hasLesson ? `${BASE_URL}lessons/${next.slug}/` : `${BASE_URL}lessons/`;
+		target.innerHTML =
+			`<span class="label">What now</span><div class="title">Next: ${next.title}</div>` +
+			`<div class="artist">Work the <strong>${next.hardPart}</strong> — <a href="${href}">open the lesson</a>.</div>`;
+	}
+
+	function renderCounts() {
+		const state = load();
+		const counts = { cold: 0, dusty: 0, warm: 0, green: 0 };
+		SONGS.forEach((s) => {
+			const st = state[s.slug] || s.status;
+			counts[st as keyof typeof counts]++;
+		});
+		Object.entries(counts).forEach(([k, v]) => {
+			const el = document.getElementById(`count-${k}`);
+			if (el) el.textContent = String(v);
+		});
+	}
+
+	document.querySelectorAll<HTMLElement>('.status').forEach((group) => {
+		group.addEventListener('click', (e) => {
+			const btn = (e.target as HTMLElement).closest('button');
+			if (!btn) return;
+			const slug = group.closest('[data-slug]')!.dataset.slug!;
+			const status = btn.dataset.set!;
+			const state = load();
+			state[slug] = status;
+			save(state);
+			applyStatuses();
+		});
+	});
+
+	applyStatuses();
+</script>

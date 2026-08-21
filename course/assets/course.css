@@ -1,0 +1,123 @@
+/* Shared stylesheet for every lesson and reference doc in the course.
+   Kept here so lessons stay visually coherent and don't inline CSS. */
+
+:root {
+	--bg: #fbfaf7;
+	--ink: #1a1a1a;
+	--muted: #6b6b6b;
+	--accent: #b3541e;
+	--rule: #e5e2dc;
+	--card: #ffffff;
+	--code-bg: #f3f1ec;
+}
+
+* { box-sizing: border-box; }
+
+html {
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--ink);
+	font-family: Georgia, 'Times New Roman', serif;
+	font-size: 18px;
+	line-height: 1.65;
+}
+
+main {
+	max-width: 42rem;
+	margin: 0 auto;
+	padding: 3rem 1.5rem 5rem;
+}
+
+h1, h2, h3, h4 {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+}
+
+h1 { font-size: 2.2rem; margin: 0 0 0.25rem; }
+h2 { font-size: 1.5rem; margin: 2.5rem 0 0.75rem; padding-top: 1rem; border-top: 1px solid var(--rule); }
+h3 { font-size: 1.15rem; margin: 1.75rem 0 0.5rem; }
+
+p { margin: 0 0 1rem; }
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { text-decoration-style: double; }
+
+hr { border: none; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+
+ul, ol { padding-left: 1.4rem; }
+li { margin: 0.35rem 0; }
+
+blockquote {
+	margin: 1.5rem 0;
+	padding: 0.5rem 1.2rem;
+	border-left: 3px solid var(--accent);
+	background: var(--card);
+	font-style: italic;
+	color: var(--muted);
+}
+
+code {
+	font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+	font-size: 0.85em;
+	background: var(--code-bg);
+	padding: 0.12em 0.35em;
+	border-radius: 3px;
+}
+
+pre {
+	background: var(--code-bg);
+	border: 1px solid var(--rule);
+	border-radius: 6px;
+	padding: 1rem 1.2rem;
+	overflow-x: auto;
+	line-height: 1.5;
+}
+
+pre code {
+	background: none;
+	padding: 0;
+	font-size: 0.85rem;
+}
+
+/* Tab / notation block */
+.tab {
+	font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+	white-space: pre;
+	background: var(--code-bg);
+	border: 1px solid var(--rule);
+	border-radius: 6px;
+	padding: 1rem 1.2rem;
+	overflow-x: auto;
+	line-height: 1.7;
+	font-size: 0.9rem;
+}
+
+/* Callouts */
+.note, .tip, .warn {
+	margin: 1.25rem 0;
+	padding: 0.75rem 1.1rem;
+	border-radius: 6px;
+	border: 1px solid var(--rule);
+	background: var(--card);
+}
+.note::before { content: 'Note — '; font-weight: 600; color: var(--muted); }
+.tip { border-left: 3px solid var(--accent); }
+.tip::before { content: 'Tip — '; font-weight: 600; color: var(--accent); }
+.warn { border-left: 3px solid #b00020; }
+.warn::before { content: 'Watch out — '; font-weight: 600; color: #b00020; }
+
+.muted { color: var(--muted); }
+.mono { font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace; }
+
+@media print {
+	body { background: #fff; font-size: 13px; }
+	main { max-width: none; padding: 0; }
+	a { color: #000; text-decoration: none; }
+	h2 { page-break-after: avoid; }
+	pre, .tab { white-space: pre-wrap; }
+}

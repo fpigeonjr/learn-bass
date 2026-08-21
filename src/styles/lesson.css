@@ -1,0 +1,89 @@
+/* Lesson body typography — applies to injected course HTML (<article>).
+   Mirrors course/assets/course.css so lessons read as printable documents. */
+
+.lesson-body {
+	background: #fbfaf7;
+	color: #1a1a1a;
+	font-family: Georgia, 'Times New Roman', serif;
+	font-size: 18px;
+	line-height: 1.65;
+	border-radius: 10px;
+	padding: 2rem 2.5rem;
+	border: 1px solid #e5e2dc;
+}
+
+.lesson-body h1,
+.lesson-body h2,
+.lesson-body h3,
+.lesson-body h4 {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	color: #1a1a1a;
+}
+
+.lesson-body h1 { font-size: 2.2rem; margin: 0 0 0.25rem; }
+.lesson-body h2 { font-size: 1.5rem; margin: 2.5rem 0 0.75rem; padding-top: 1rem; border-top: 1px solid #e5e2dc; }
+.lesson-body h3 { font-size: 1.15rem; margin: 1.75rem 0 0.5rem; }
+
+.lesson-body p { margin: 0 0 1rem; }
+.lesson-body a { color: #b3541e; }
+.lesson-body ul, .lesson-body ol { padding-left: 1.4rem; }
+.lesson-body li { margin: 0.35rem 0; }
+
+.lesson-body blockquote {
+	margin: 1.5rem 0;
+	padding: 0.5rem 1.2rem;
+	border-left: 3px solid #b3541e;
+	background: #fff;
+	font-style: italic;
+	color: #6b6b6b;
+}
+
+.lesson-body code {
+	font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+	font-size: 0.85em;
+	background: #f3f1ec;
+	padding: 0.12em 0.35em;
+	border-radius: 3px;
+}
+
+.lesson-body pre,
+.lesson-body .tab {
+	font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+	background: #f3f1ec;
+	border: 1px solid #e5e2dc;
+	border-radius: 6px;
+	padding: 1rem 1.2rem;
+	overflow-x: auto;
+	line-height: 1.7;
+	font-size: 0.9rem;
+}
+
+.lesson-body .tab { white-space: pre; }
+
+.lesson-body .note,
+.lesson-body .tip,
+.lesson-body .warn {
+	margin: 1.25rem 0;
+	padding: 0.75rem 1.1rem;
+	border-radius: 6px;
+	border: 1px solid #e5e2dc;
+	background: #fff;
+}
+.lesson-body .note::before { content: 'Note — '; font-weight: 600; color: #6b6b6b; }
+.lesson-body .tip { border-left: 3px solid #b3541e; }
+.lesson-body .tip::before { content: 'Tip — '; font-weight: 600; color: #b3541e; }
+.lesson-body .warn { border-left: 3px solid #b00020; }
+.lesson-body .warn::before { content: 'Watch out — '; font-weight: 600; color: #b00020; }
+
+.lesson-body .muted { color: #6b6b6b; }
+.lesson-body .mono { font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace; }
+
+@media print {
+	.lesson-body { background: #fff; padding: 0; border: none; }
+}
+
+@media (max-width: 640px) {
+	.lesson-body { padding: 1.25rem 1.25rem; font-size: 16px; }
+}

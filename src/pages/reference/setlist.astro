@@ -1,0 +1,32 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { url } from '../../lib/url';
+import { songs } from '../../data/songs';
+---
+
+<Layout title="Setlist & Form Map">
+	<main class="wrap">
+		<nav style="font-size:0.9rem;color:var(--muted);margin-bottom:1rem;"><a href={url("reference/")}>← all reference</a></nav>
+		<h1>Setlist &amp; form map</h1>
+		<p class="lead">The whole night at a glance. Key, tempo, and status for all 9 songs.</p>
+
+		<div class="card">
+			<ul class="board">
+				{songs.map((s) => (
+					<li>
+						<span class="order">{String(s.order).padStart(2, '0')}</span>
+						<div class="info">
+							<div class="title">
+								{s.title}
+								{s.tier === 'backup' && <span class="badge backup">backup</span>}
+							</div>
+							<div class="artist">{s.artist}</div>
+						</div>
+						<span class="pill">{s.status}</span>
+					</li>
+				))}
+			</ul>
+		</div>
+		<p class="muted">Key and tempo per song live in each lesson and are filled in as lessons are authored.</p>
+	</main>
+</Layout>

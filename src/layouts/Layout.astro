@@ -1,0 +1,36 @@
+---
+interface Props {
+	title: string;
+}
+const { title } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<title>{title} · Gig-Ready Bass</title>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="inner">
+				<div class="brand">🎸 Gig-Ready Bass <span class="muted">/ learn-bass</span></div>
+				<nav>
+					<a href={`${base}`}>Dashboard</a>
+					<a href={`${base}lessons/`}>Lessons</a>
+					<a href={`${base}reference/`}>Reference</a>
+					<a href={`${base}about`}>About</a>
+				</nav>
+			</div>
+		</header>
+		<slot />
+	</body>
+</html>
+
+<style>
+	@import '../styles/global.css';
+</style>

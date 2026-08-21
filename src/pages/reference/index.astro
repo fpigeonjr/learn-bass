@@ -1,0 +1,48 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { url } from '../../lib/url';
+---
+
+<Layout title="Reference">
+	<main class="wrap">
+		<h1>Reference</h1>
+		<p class="lead">Quick-lookup cheat sheets. Print-friendly, meant for the music stand or phone, not linear reading.</p>
+
+		<div class="card">
+			<ul class="board">
+				<li>
+					<span class="order">01</span>
+					<div class="info">
+						<div class="title">Warm-ups & right hand</div>
+						<div class="artist">Stretches, spider, digital permutations, alternation, muted groove</div>
+					</div>
+					<a href={url("reference/warmups/")}>open</a>
+				</li>
+				<li>
+					<span class="order">02</span>
+					<div class="info">
+						<div class="title">Scales & arpeggios</div>
+						<div class="artist">E minor pentatonic, blues, G major, A minor — mapped to the setlist</div>
+					</div>
+					<a href={url("reference/scales/")}>open</a>
+				</li>
+				<li>
+					<span class="order">03</span>
+					<div class="info">
+						<div class="title">Setlist & form map</div>
+						<div class="artist">All 9 songs: key, tempo, status, form</div>
+					</div>
+					<a href={url("reference/setlist/")}>open</a>
+				</li>
+				<li>
+					<span class="order">04</span>
+					<div class="info">
+						<div class="title">Glossary</div>
+						<div class="artist">The course's canonical language</div>
+					</div>
+					<a href={url("reference/glossary/")}>open</a>
+				</li>
+			</ul>
+		</div>
+	</main>
+</Layout>

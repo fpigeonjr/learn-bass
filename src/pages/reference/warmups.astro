@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import WarmupGame from '../../components/WarmupGame.astro';
 import { url } from '../../lib/url';
 ---
 
@@ -36,6 +37,10 @@ import { url } from '../../lib/url';
 				<li>Say the finger number aloud as you play</li>
 			</ul>
 		</article>
+
+		<h2>Play-along chart</h2>
+		<p class="muted">Pick an exercise, set the tempo, hit Start. A four-count leads you in, then play the falling notes on your bass in time with the click. No tapping — it's a visual cue.</p>
+		<WarmupGame />
 	</main>
 </Layout>
 

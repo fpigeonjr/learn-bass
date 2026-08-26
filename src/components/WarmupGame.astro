@@ -1,0 +1,347 @@
+---
+// WarmupGame — Guitar Hero–style falling-note play-along for bass.
+// No input: notes drop as a visual cue to play along on a real bass,
+// synced to a WebAudio metronome (accented downbeats).
+// Mobile-first: 4 lanes fill portrait width, large readable notes.
+---
+
+<section class="gh">
+	<div class="gh-controls">
+		<label class="gh-field">
+			<span>Exercise</span>
+			<select id="gh-exercise">
+				<option value="alternation">Open-string alternation</option>
+				<option value="crossing">String crossing</option>
+				<option value="spider">Spider 1-2-3-4</option>
+				<option value="roots">Root-pulse (E A D G)</option>
+			</select>
+		</label>
+		<label class="gh-field">
+			<span>Tempo</span>
+			<select id="gh-tempo">
+				<option value="60">60 bpm</option>
+				<option value="70">70 bpm</option>
+				<option value="80" selected>80 bpm</option>
+				<option value="90">90 bpm</option>
+				<option value="100">100 bpm</option>
+				<option value="120">120 bpm</option>
+			</select>
+		</label>
+		<button id="gh-start" class="gh-start">Start</button>
+	</div>
+
+	<div class="gh-stage" id="gh-stage">
+		<div class="gh-lanes">
+			<div class="gh-lane" data-string="G"><span class="gh-label">G</span></div>
+			<div class="gh-lane" data-string="D"><span class="gh-label">D</span></div>
+			<div class="gh-lane" data-string="A"><span class="gh-label">A</span></div>
+			<div class="gh-lane" data-string="E"><span class="gh-label">E</span></div>
+		</div>
+		<div class="gh-strike"></div>
+		<div class="gh-count" id="gh-count" hidden></div>
+	</div>
+</section>
+
+<script define:vars={{}}>
+	import { STRINGS, STRING_COLORS, getExercise, stringAtBeat, secondsPerBeat, layOutNote, type StringId } from '../lib/warmup';
+
+	const COLORS = STRING_COLORS;
+
+	const stage = document.getElementById('gh-stage')!;
+	const lanesEl = stage.querySelector('.gh-lanes')!;
+	const countEl = document.getElementById('gh-count')!;
+	const startBtn = document.getElementById('gh-start')!;
+	const exSel = document.getElementById('gh-exercise')! as HTMLSelectElement;
+	const tempoSel = document.getElementById('gh-tempo')! as HTMLSelectElement;
+
+	// --- Track geometry ---
+	let strikeY = 0; // pixels from top of lanes where the strike line sits
+
+	function measure() {
+		strikeY = stage.clientHeight - 56; // strike line sits near the bottom, above labels
+	}
+
+	// --- Audio engine (WebAudio metronome) ---
+	let audioCtx: AudioContext | null = null;
+	let running = false;
+	let beatIdx = 0; // absolute beat counter
+	let nextBeatTime = 0; // audio-context time of the next beat
+	let rafId = 0;
+	let notes: HTMLElement[] = [];
+	let beatDur = 0.5; // seconds per beat
+	let lookahead = 4; // beats of runway visible ahead
+
+	function ensureAudio() {
+		if (!audioCtx) {
+			audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+		}
+	}
+
+	function click(time: number, accent: boolean) {
+		if (!audioCtx) return;
+		const osc = audioCtx.createOscillator();
+		const gain = audioCtx.createGain();
+		osc.type = 'square';
+		osc.frequency.value = accent ? 1200 : 880;
+		gain.gain.setValueAtTime(0.4, time);
+		gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+		osc.connect(gain);
+		gain.connect(audioCtx.destination);
+		osc.start(time);
+		osc.stop(time + 0.06);
+	}
+
+	function scheduleBeat(beat: number, time: number) {
+		const accent = beat % 4 === 0;
+		click(time, accent);
+		// spawn the note now, positioned far ahead in time
+		spawnNote(beat, time);
+	}
+
+	// --- Note rendering ---
+	function spawnNote(beat: number, time: number) {
+		const ex = getExercise(exSel.value);
+		const str = stringAtBeat(ex, beat);
+		if (!str) return; // rest — no note
+		const lane = lanesEl.querySelector(`[data-string="${str}"]`)!;
+
+		const note = document.createElement('div');
+		note.className = 'gh-note';
+		note.style.setProperty('--c', COLORS[str]);
+		note.dataset.time = String(time); // absolute audio-context strike time
+		lane.appendChild(note);
+		notes.push(note);
+	}
+
+	// Position each note based on where it sits in time relative to "now".
+	function layoutNotes() {
+		if (!running || !audioCtx) return;
+		const now = audioCtx.currentTime;
+		// strike line corresponds to time === now. A note scheduled at time T
+		// should be at the strike line when now === T. Runway spans `lookahead` beats.
+		const runwayPx = strikeY - 40;
+		for (const note of notes) {
+			const strikeTime = Number(note.dataset.time);
+			const layout = layOutNote({
+				strikeTime,
+				now,
+				strikeY,
+				runwayPx,
+				lookaheadBeats: lookahead,
+				bpm: Number(tempoSel.value),
+			});
+			note.style.transform = `translateY(${layout.y}px)`;
+			note.style.opacity = String(layout.opacity);
+			// remove notes well past the strike
+			if (layout.expired) note.remove();
+		}
+		notes = notes.filter((n) => n.isConnected);
+	}
+
+	// --- Main loop ---
+	function tick() {
+		if (!running || !audioCtx) return;
+		// schedule any beats whose time fell in the last frame
+		while (nextBeatTime < audioCtx.currentTime + 0.12) {
+			scheduleBeat(beatIdx, nextBeatTime);
+			beatIdx++;
+			nextBeatTime += beatDur;
+		}
+		layoutNotes();
+		rafId = requestAnimationFrame(tick);
+	}
+
+	// --- Count-in ---
+	function countIn(cb: () => void) {
+		countEl.hidden = false;
+		let n = 4;
+		const label = ['1', '2', '3', '4'];
+		function step() {
+			if (n === 0) {
+				countEl.hidden = true;
+				cb();
+				return;
+			}
+			countEl.textContent = label[4 - n];
+			if (audioCtx) click(audioCtx.currentTime + 0.01, 4 - n === 1);
+			n--;
+			setTimeout(step, beatDur * 1000);
+		}
+		step();
+	}
+
+	function stop() {
+		running = false;
+		cancelAnimationFrame(rafId);
+		notes.forEach((n) => n.remove());
+		notes = [];
+		beatIdx = 0;
+		countEl.hidden = true;
+		startBtn.textContent = 'Start';
+		startBtn.classList.remove('running');
+	}
+
+	function start() {
+		ensureAudio();
+		measure();
+		beatDur = secondsPerBeat(Number(tempoSel.value));
+		startBtn.textContent = 'Stop';
+		startBtn.classList.add('running');
+
+		// Clear any stale notes
+		notes.forEach((n) => n.remove());
+		notes = [];
+
+		countIn(() => {
+			if (!audioCtx) return;
+			audioCtx.resume();
+			running = true;
+			beatIdx = 0;
+			nextBeatTime = audioCtx.currentTime + 0.1;
+			rafId = requestAnimationFrame(tick);
+		});
+	}
+
+	startBtn.addEventListener('click', () => {
+		if (running) stop();
+		else start();
+	});
+
+	// Re-measure on resize / orientation change
+	window.addEventListener('resize', measure);
+
+	measure();
+
+	// Pre-render lane labels + build lanes layout immediately
+	lanesEl.querySelectorAll<HTMLElement>('.gh-lane').forEach((lane) => {
+		const str = lane.dataset.string as StringId;
+		lane.style.setProperty('--c', COLORS[str]);
+	});
+</script>
+
+<style>
+	.gh {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+	.gh-controls {
+		display: flex;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		align-items: flex-end;
+	}
+	.gh-field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+		font-size: 0.8rem;
+		color: var(--muted);
+	}
+	.gh-field select {
+		background: var(--panel-2);
+		color: var(--ink);
+		border: 1px solid var(--rule);
+		border-radius: 6px;
+		padding: 0.45rem 0.6rem;
+		font-size: 0.95rem;
+	}
+	.gh-start {
+		background: var(--accent-2);
+		color: #0a120c;
+		border: none;
+		border-radius: 8px;
+		padding: 0.6rem 1.4rem;
+		font-size: 1rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+	.gh-start.running {
+		background: var(--red);
+		color: #160a0a;
+	}
+
+	.gh-stage {
+		position: relative;
+		height: 60vh;
+		min-height: 320px;
+		max-height: 560px;
+		background: var(--panel);
+		border: 1px solid var(--rule);
+		border-radius: 10px;
+		overflow: hidden;
+	}
+	.gh-lanes {
+		position: absolute;
+		inset: 0;
+		display: flex;
+	}
+	.gh-lane {
+		position: relative;
+		flex: 1;
+		border-right: 1px solid var(--rule);
+		overflow: hidden;
+	}
+	.gh-lane:last-child {
+		border-right: none;
+	}
+	.gh-label {
+		position: absolute;
+		bottom: 0.5rem;
+		left: 0;
+		right: 0;
+		text-align: center;
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: var(--c);
+		opacity: 0.8;
+	}
+	.gh-strike {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 56px;
+		height: 2px;
+		background: var(--ink);
+		opacity: 0.5;
+		box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+	}
+
+	.gh-note {
+		position: absolute;
+		top: 0;
+		left: 6%;
+		width: 88%;
+		height: 22px;
+		border-radius: 6px;
+		background: linear-gradient(180deg, var(--c), color-mix(in srgb, var(--c) 60%, black));
+		border: 1px solid rgba(255, 255, 255, 0.25);
+		box-shadow: 0 0 8px color-mix(in srgb, var(--c) 60%, transparent);
+		will-change: transform, opacity;
+	}
+
+	.gh-count {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		font-size: 4rem;
+		font-weight: 800;
+		color: var(--ink);
+		text-shadow: 0 0 20px var(--accent);
+		pointer-events: none;
+	}
+
+	@media (min-width: 720px) {
+		.gh-note { height: 26px; }
+	}
+
+	@media (max-width: 480px) {
+		.gh-controls { flex-direction: column; align-items: stretch; }
+		.gh-field { flex: 1; }
+		.gh-field select { width: 100%; font-size: 1rem; padding: 0.6rem; }
+		.gh-start { width: 100%; min-height: 48px; font-size: 1.1rem; }
+		.gh-stage { height: 50vh; min-height: 280px; }
+		.gh-note { height: 20px; }
+	}
+</style>

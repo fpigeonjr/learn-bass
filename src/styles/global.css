@@ -158,3 +158,51 @@ h2 { font-size: 1.35rem; margin: 2.25rem 0 0.75rem; }
 .next-card .label { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.75rem; color: var(--accent); }
 
 .footer { color: var(--muted); font-size: 0.85rem; margin-top: 3rem; }
+
+/* ---- Mobile-first tightening ---- */
+
+/* Header: let nav wrap cleanly on narrow screens and keep brand intact. */
+.site-header .inner { gap: 0.5rem; }
+nav { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; }
+nav a { margin-left: 0; }
+
+/* Board rows: let title/artist wrap instead of clipping. */
+.board .title,
+.badge,
+.pill { overflow-wrap: anywhere; }
+.board .artist { overflow-wrap: break-word; }
+
+/* Status buttons: horizontal row, comfortable tap targets (≥44px). */
+.status { flex-direction: row; }
+.status button {
+	padding: 0.45rem 0.6rem;
+	font-size: 0.72rem;
+	min-width: 44px;
+	min-height: 44px;
+}
+
+/* Narrow screens: tighten type, right-align row controls. */
+@media (max-width: 640px) {
+	.board a,
+	.board .pill { margin-left: auto; flex-shrink: 0; padding: 0.4rem 0.6rem; min-height: 44px; display: inline-flex; align-items: center; }
+	h1 { font-size: 1.65rem; }
+	h2 { font-size: 1.25rem; }
+
+	/* Reference articles (scales, warm-ups, glossary) — comfortable reading on phones */
+	.course-article { font-size: 16px; }
+	.course-article .tab { font-size: 0.82rem; padding: 0.85rem 1rem; }
+}
+
+/* Very narrow: let the right-hand control (status row / link) wrap onto its
+   own line so the song title never collides with four status buttons. */
+@media (max-width: 480px) {
+	.board li {
+		flex-wrap: wrap;
+		row-gap: 0.5rem;
+	}
+	.board .info { flex: 1 1 100%; }
+	.board a,
+	.board .pill { margin-left: 0; flex: 0 0 auto; }
+	.status { margin-left: 1.7rem; }
+	.wrap { padding: 0 0.9rem 3rem; }
+}

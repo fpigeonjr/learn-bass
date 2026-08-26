@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Tracker from '../components/Tracker.astro';
+import { url } from '../lib/url';
 import { songs } from '../data/songs';
 const greenCount = songs.filter((s) => s.status === 'green').length;
 const warmCount = songs.filter((s) => s.status === 'warm').length;
@@ -76,6 +77,7 @@ const initialDays = Math.max(0, Math.ceil((new Date('2026-10-09T00:00:00-05:00')
 
 	<div class="card">
 		<h2>Daily warm-up · 45-60 min</h2>
+		<p class="muted"><a href={url("reference/warmups/")}>Open the play-along chart →</a></p>
 		<ul class="checklist">
 			<li>
 				<input type="checkbox" id="wu-0" data-k="0" />

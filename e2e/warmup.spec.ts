@@ -68,6 +68,47 @@ test.describe('warm-up play-along chart', () => {
 		await expect(page.locator('.gh-note')).toHaveCount(0);
 	});
 
+	test('notes show their fret number (spider exercise shows 1-2-3-4)', async ({ page }) => {
+		await page.selectOption('#gh-exercise', 'spider');
+		await page.selectOption('#gh-tempo', '60'); // 1s/beat → slow, easy to observe
+		await page.click('#gh-start');
+
+		// Wait for the count-in (4 beats = 4s) to finish and notes to appear.
+		await expect
+			.poll(async () => page.locator('.gh-note').count(), { timeout: 8_000 })
+			.toBeGreaterThan(0);
+
+		// Every visible note carries a fret label and a lane (string).
+		const notes = await page.locator('.gh-note').evaluateAll((els) =>
+			els.map((el) => ({
+				string: el.closest('.gh-lane')?.getAttribute('data-string'),
+				fret: el.querySelector('.gh-fret')?.textContent,
+			})),
+		);
+
+		expect(notes.length).toBeGreaterThan(0);
+		for (const n of notes) {
+			expect(['E', 'A', 'D', 'G']).toContain(n.string);
+			expect(['1', '2', '3', '4']).toContain(n.fret);
+		}
+	});
+
+	test('open-string exercises show fret 0', async ({ page }) => {
+		// Default exercise is "Open-string alternation" — all open strings.
+		await page.selectOption('#gh-tempo', '60');
+		await page.click('#gh-start');
+
+		await expect
+			.poll(async () => page.locator('.gh-note').count(), { timeout: 8_000 })
+			.toBeGreaterThan(0);
+
+		const frets = await page.locator('.gh-fret').allTextContents();
+		expect(frets.length).toBeGreaterThan(0);
+		for (const f of frets) {
+			expect(f).toBe('0');
+		}
+	});
+
 	test('is mobile-friendly: no horizontal scroll and a full-width Start button', async ({
 		page,
 	}) => {

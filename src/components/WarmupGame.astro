@@ -3,10 +3,8 @@
 // No input: notes drop as a visual cue to play along on a real bass,
 // synced to a WebAudio metronome (accented downbeats).
 // Mobile-first: 4 lanes fill portrait width, large readable notes.
-import { STRING_COLORS, EXERCISES } from '../lib/warmup';
+import { STRING_COLORS, EXERCISES, STRINGS } from '../lib/warmup';
 
-// Pass the tested module into the client script (avoids TS in the <script> body).
-const STRINGS = ['E', 'A', 'D', 'G'] as const;
 ---
 
 <section class="gh">
@@ -54,10 +52,9 @@ const STRINGS = ['E', 'A', 'D', 'G'] as const;
 		return EXERCISES.find((e) => e.id === id) || EXERCISES[0];
 	}
 
-	// chart index → string letter (order: E A D G), or null for a rest.
-	function stringAtBeat(ex, beat) {
-		const idx = ex.chart[beat % ex.chart.length];
-		return idx < 0 ? null : STRINGS[idx];
+	// note on a given beat = { string, fret }, or null for a rest.
+	function noteAtBeat(ex, beat) {
+		return ex.chart[beat % ex.chart.length];
 	}
 
 	const stage = document.getElementById('gh-stage');
@@ -116,16 +113,23 @@ const STRINGS = ['E', 'A', 'D', 'G'] as const;
 	// --- Note rendering ---
 	function spawnNote(beat, time) {
 		const ex = getExercise(exSel.value);
-		const str = stringAtBeat(ex, beat);
-		if (!str) return; // rest — no note
-		const lane = lanesEl.querySelector('[data-string="' + str + '"]');
+		const note = noteAtBeat(ex, beat);
+		if (!note) return; // rest — no note
+		const lane = lanesEl.querySelector('[data-string="' + note.string + '"]');
 
-		const note = document.createElement('div');
-		note.className = 'gh-note';
-		note.style.setProperty('--c', STRING_COLORS[str]);
-		note.dataset.time = String(time); // absolute audio-context strike time
-		lane.appendChild(note);
-		notes.push(note);
+		const el = document.createElement('div');
+		el.className = 'gh-note';
+		el.style.setProperty('--c', STRING_COLORS[note.string]);
+		el.dataset.time = String(time); // absolute audio-context strike time
+
+		// Fret number on the block (0 = open string).
+		const fret = document.createElement('span');
+		fret.className = 'gh-fret';
+		fret.textContent = String(note.fret);
+		el.appendChild(fret);
+
+		lane.appendChild(el);
+		notes.push(el);
 	}
 
 	// Position each note based on where it sits relative to "now".
@@ -340,6 +344,21 @@ const STRINGS = ['E', 'A', 'D', 'G'] as const;
 		border: 1px solid rgba(255, 255, 255, 0.25);
 		box-shadow: 0 0 8px color-mix(in srgb, var(--c) 60%, transparent);
 		will-change: transform, opacity;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	/* Fret number inside each note (0 = open string). */
+	:global(.gh-fret) {
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+		font-size: 0.75rem;
+		font-weight: 700;
+		line-height: 1;
+		color: rgba(255, 255, 255, 0.95);
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+		pointer-events: none;
+		user-select: none;
 	}
 
 	.gh-count {

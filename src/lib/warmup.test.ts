@@ -4,11 +4,11 @@ import {
 	STRING_COLORS,
 	EXERCISES,
 	getExercise,
-	stringAtBeat,
+	noteAtBeat,
 	secondsPerBeat,
 	layOutNote,
 	isRest,
-	type ExerciseId,
+	type Note,
 } from './warmup';
 
 describe('STRINGS', () => {
@@ -33,15 +33,37 @@ describe('EXERCISES', () => {
 		]);
 	});
 
-	it('every exercise chart references only valid string indices or -1 (rest)', () => {
+	it('every exercise chart has a valid length and only known strings / non-negative frets', () => {
 		for (const ex of EXERCISES) {
 			expect(ex.chart.length).toBeGreaterThan(0);
 			expect(ex.length).toBe(ex.chart.length);
-			for (const idx of ex.chart) {
-				expect(idx).toBeGreaterThanOrEqual(-1);
-				expect(idx).toBeLessThanOrEqual(STRINGS.length - 1);
+			for (const slot of ex.chart) {
+				if (slot === null) continue; // rest is allowed
+				expect(STRINGS).toContain(slot.string);
+				expect(slot.fret).toBeGreaterThanOrEqual(0);
 			}
 		}
+	});
+
+	it('open-string exercises use fret 0 throughout', () => {
+		for (const id of ['alternation', 'crossing', 'roots'] as const) {
+			const ex = getExercise(id);
+			for (const slot of ex.chart) {
+				if (slot === null) continue;
+				expect(slot.fret).toBe(0);
+			}
+		}
+	});
+
+	it('spider exercise maps frets 1-2-3-4 (and back) across strings', () => {
+		const spider = getExercise('spider');
+		const frets = spider.chart.map((slot) => (slot ? slot.fret : null));
+		expect(frets).toEqual([
+			1, 2, 3, 4, // E string
+			1, 2, 3, 4, // A string
+			4, 3, 2, 1, // D string (descend)
+			4, 3, 2, 1, // G string (descend)
+		]);
 	});
 });
 
@@ -59,25 +81,24 @@ describe('getExercise', () => {
 	});
 });
 
-describe('stringAtBeat', () => {
+describe('noteAtBeat', () => {
 	const spider = getExercise('spider');
 
-	it('walks E→A→D→G for the first four beats', () => {
-		expect(stringAtBeat(spider, 0)).toBe('E');
-		expect(stringAtBeat(spider, 1)).toBe('A');
-		expect(stringAtBeat(spider, 2)).toBe('D');
-		expect(stringAtBeat(spider, 3)).toBe('G');
+	it('returns the note (string + fret) for a beat', () => {
+		expect(noteAtBeat(spider, 0)).toEqual({ string: 'E', fret: 1 });
+		expect(noteAtBeat(spider, 4)).toEqual({ string: 'A', fret: 1 });
+		expect(noteAtBeat(spider, 11)).toEqual({ string: 'D', fret: 1 });
 	});
 
 	it('wraps around by the loop length (modulo)', () => {
-		expect(stringAtBeat(spider, 16)).toBe(stringAtBeat(spider, 0));
-		expect(stringAtBeat(spider, 17)).toBe(stringAtBeat(spider, 1));
+		expect(noteAtBeat(spider, 16)).toEqual(noteAtBeat(spider, 0));
+		expect(noteAtBeat(spider, 17)).toEqual(noteAtBeat(spider, 1));
 	});
 
 	it('returns null for rests', () => {
 		const crossing = getExercise('crossing');
-		// crossing chart has a rest at index 15 (-1)
-		expect(stringAtBeat(crossing, 15)).toBeNull();
+		// crossing chart has a rest at index 15
+		expect(noteAtBeat(crossing, 15)).toBeNull();
 	});
 });
 
@@ -134,9 +155,8 @@ describe('layOutNote', () => {
 });
 
 describe('isRest', () => {
-	it('detects rests (index -1)', () => {
-		expect(isRest(-1)).toBe(true);
-		expect(isRest(0)).toBe(false);
-		expect(isRest(3)).toBe(false);
+	it('detects rests (null slot)', () => {
+		expect(isRest(null)).toBe(true);
+		expect(isRest({ string: 'E', fret: 0 })).toBe(false);
 	});
 });

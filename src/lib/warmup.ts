@@ -14,37 +14,69 @@ export const STRING_COLORS: Record<StringId, string> = {
 
 export type ExerciseId = 'alternation' | 'crossing' | 'spider' | 'roots';
 
+// A single grid position: which string and which fret to play.
+// A `null` slot is a rest (no note).
+export interface Note {
+	string: StringId;
+	fret: number; // 0 = open string, 1-4 = fretted (spider)
+}
+
+export type Slot = Note | null;
+
 export interface ExerciseDef {
 	id: ExerciseId;
 	label: string;
-	length: number; // beats per loop
-	chart: number[]; // index into STRINGS per beat; -1 = rest
+	length: number; // beats per loop (equals chart.length)
+	chart: Slot[];
 }
+
+// Shorthand helpers keep the charts readable.
+const s = (string: StringId, fret: number): Slot => ({ string, fret });
+const R = null; // rest
 
 export const EXERCISES: ExerciseDef[] = [
 	{
 		id: 'alternation',
 		label: 'Open-string alternation',
 		length: 16,
-		chart: [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3],
+		chart: [
+			s('E', 0), s('E', 0), s('E', 0), s('E', 0),
+			s('A', 0), s('A', 0), s('A', 0), s('A', 0),
+			s('D', 0), s('D', 0), s('D', 0), s('D', 0),
+			s('G', 0), s('G', 0), s('G', 0), s('G', 0),
+		],
 	},
 	{
 		id: 'crossing',
 		label: 'String crossing',
 		length: 16,
-		chart: [0, 0, 1, 1, 2, 2, 3, 3, 2, 2, 1, 1, 0, 0, 1, -1],
+		chart: [
+			s('E', 0), s('E', 0), s('A', 0), s('A', 0),
+			s('D', 0), s('D', 0), s('G', 0), s('G', 0),
+			s('D', 0), s('D', 0), s('A', 0), s('A', 0),
+			s('E', 0), s('E', 0), s('A', 0), R,
+		],
 	},
 	{
 		id: 'spider',
 		label: 'Spider 1-2-3-4',
 		length: 16,
-		chart: [0, 1, 2, 3, 0, 1, 2, 3, 3, 2, 1, 0, 3, 2, 1, 0],
+		// One finger per fret, walking across strings: 1-2-3-4 then back down.
+		chart: [
+			s('E', 1), s('E', 2), s('E', 3), s('E', 4),
+			s('A', 1), s('A', 2), s('A', 3), s('A', 4),
+			s('D', 4), s('D', 3), s('D', 2), s('D', 1),
+			s('G', 4), s('G', 3), s('G', 2), s('G', 1),
+		],
 	},
 	{
 		id: 'roots',
 		label: 'Root-pulse (E A D G)',
 		length: 8,
-		chart: [0, 0, 1, 1, 2, 2, 3, 3],
+		chart: [
+			s('E', 0), s('E', 0), s('A', 0), s('A', 0),
+			s('D', 0), s('D', 0), s('G', 0), s('G', 0),
+		],
 	},
 ];
 
@@ -52,10 +84,9 @@ export function getExercise(id: string): ExerciseDef {
 	return EXERCISES.find((e) => e.id === id) ?? EXERCISES[0];
 }
 
-// Which string (or null for a rest) should sound on a given absolute beat.
-export function stringAtBeat(exercise: ExerciseDef, beat: number): StringId | null {
-	const index = exercise.chart[beat % exercise.length];
-	return index < 0 ? null : STRINGS[index];
+// Which note (string + fret) — or null for a rest — sounds on a given beat.
+export function noteAtBeat(exercise: ExerciseDef, beat: number): Slot {
+	return exercise.chart[beat % exercise.length];
 }
 
 // Seconds per beat for a given BPM.
@@ -94,7 +125,7 @@ export function layOutNote(opts: {
 	};
 }
 
-// A note is "rest" if the chart marks it -1 (no note to show/play).
-export function isRest(index: number): boolean {
-	return index < 0;
+// A slot is a "rest" when it's null.
+export function isRest(slot: Slot): boolean {
+	return slot === null;
 }

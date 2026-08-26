@@ -1,15 +1,20 @@
 /* Site chrome (dashboard/app), distinct from the course.css print aesthetic. */
 
 :root {
-	--bg: #12100e;
+	--bg: #0e0c0a;
 	--panel: #1b1815;
 	--panel-2: #221e1a;
 	--ink: #f2ede6;
 	--muted: #a39b90;
 	--accent: #e07a3f;
-	--accent-2: #4a8f6b;
+	--accent-2: #2eb872;
 	--rule: #2f2a24;
-	--red: #c94f4f;
+	--red: #e05555;
+	--gh-green: #2eb872;
+	--gh-red: #e05555;
+	--gh-yellow: #f0c040;
+	--gh-blue: #4a90d9;
+	--gh-orange: #e07a3f;
 }
 
 * { box-sizing: border-box; }
@@ -18,7 +23,11 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
 	margin: 0;
-	background: var(--bg);
+	background:
+		radial-gradient(ellipse 90% 55% at 50% -10%, rgba(224, 122, 63, 0.18), transparent 60%),
+		radial-gradient(ellipse 70% 45% at 15% 0%, rgba(74, 144, 217, 0.12), transparent 55%),
+		radial-gradient(ellipse 70% 45% at 85% 0%, rgba(46, 184, 114, 0.10), transparent 55%),
+		var(--bg);
 	color: var(--ink);
 	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 	line-height: 1.55;
@@ -29,13 +38,14 @@ a { color: var(--accent); }
 .wrap {
 	max-width: 60rem;
 	margin: 0 auto;
-	padding: 0 1.25rem 4rem;
+	padding: 1.5rem 1.5rem 4rem;
 }
 
 .site-header {
 	border-bottom: 1px solid var(--rule);
 	padding: 1.25rem 0;
-	background: var(--panel);
+	background: linear-gradient(180deg, #1f1b18 0%, var(--panel) 100%);
+	box-shadow: 0 2px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(224,122,63,0.08) inset;
 }
 .site-header .inner {
 	max-width: 60rem;
@@ -64,20 +74,22 @@ h2 { font-size: 1.35rem; margin: 2.25rem 0 0.75rem; }
 	margin: 1.25rem 0;
 }
 .stat {
-	background: var(--panel);
+	background: linear-gradient(180deg, #222 0%, var(--panel) 100%);
 	border: 1px solid var(--rule);
 	border-radius: 10px;
 	padding: 0.9rem 1rem;
+	box-shadow: 0 2px 12px rgba(0,0,0,0.3);
 }
 .stat .num { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; }
 .stat .lbl { color: var(--muted); font-size: 0.85rem; }
 
 .card {
-	background: var(--panel);
+	background: linear-gradient(180deg, #201c19 0%, var(--panel) 100%);
 	border: 1px solid var(--rule);
-	border-radius: 10px;
-	padding: 1.25rem 1.35rem;
-	margin: 1rem 0;
+	border-radius: 12px;
+	padding: 1.35rem 1.5rem;
+	margin: 1.25rem 0;
+	box-shadow: 0 4px 20px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.03) inset;
 }
 
 /* Setlist board */
@@ -127,8 +139,12 @@ h2 { font-size: 1.35rem; margin: 2.25rem 0 0.75rem; }
 	padding: 0.2rem 0.55rem;
 	cursor: pointer;
 }
-.status button:hover { background: #2a251f; }
-.status button.active { background: var(--accent); color: #1a1008; font-weight: 600; }
+.status button:hover { background: #2a251f; filter: brightness(1.15); }
+.status button.active[data-set="cold"] { background: var(--gh-blue); color: #0a1628; font-weight: 700; box-shadow: 0 0 10px rgba(74,144,217,0.6); }
+.status button.active[data-set="dusty"] { background: var(--gh-yellow); color: #1a1400; font-weight: 700; box-shadow: 0 0 10px rgba(240,192,64,0.6); }
+.status button.active[data-set="warm"] { background: var(--gh-orange); color: #1a1008; font-weight: 700; box-shadow: 0 0 10px rgba(224,122,63,0.6); }
+.status button.active[data-set="green"] { background: var(--gh-green); color: #071a10; font-weight: 700; box-shadow: 0 0 12px rgba(46,184,114,0.7); }
+.status button.active { border-radius: 4px; }
 
 .pill {
 	display: inline-block;
@@ -154,10 +170,10 @@ h2 { font-size: 1.35rem; margin: 2.25rem 0 0.75rem; }
 .checklist .step { color: var(--muted); font-size: 0.85rem; }
 .checklist input:checked + span .lbl { text-decoration: line-through; color: var(--muted); }
 
-.next-card { border-left: 3px solid var(--accent); }
+.next-card { border-left: 3px solid var(--accent); background: linear-gradient(90deg, rgba(224,122,63,0.08), transparent 60%), linear-gradient(180deg, #201c19, var(--panel)); }
 .next-card .label { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.75rem; color: var(--accent); }
 
-.footer { color: var(--muted); font-size: 0.85rem; margin-top: 3rem; }
+.footer { color: var(--muted); font-size: 0.85rem; margin-top: 3rem; opacity: 0.7; }
 
 /* ---- Mobile-first tightening ---- */
 

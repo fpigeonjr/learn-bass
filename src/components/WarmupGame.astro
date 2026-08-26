@@ -123,10 +123,11 @@ const { heading = 'Pattern', tracks = [] } = Astro.props;
 		const lane = lanesEl.querySelector('[data-string="' + note.string + '"]');
 
 		const el = document.createElement('div');
-		el.className = 'gh-note';
+		el.className = 'gh-note' + (note.fret >= 12 ? ' gh-note--high' : '');
 		el.style.setProperty('--c', STRING_COLORS[note.string]);
 		el.dataset.time = String(time); // absolute audio-context strike time
 		el.dataset.beat = String(beat); // absolute beat index (for test identity)
+		if (note.fret >= 12) el.dataset.box = '2';
 
 		// Fret number on the block (0 = open string).
 		const fret = document.createElement('span');
@@ -356,6 +357,20 @@ const { heading = 'Pattern', tracks = [] } = Astro.props;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+	}
+
+	/* High position (12+ frets) — visually distinct box. */
+	:global(.gh-note--high) {
+		border-color: #f0c040 !important;
+		box-shadow:
+			0 0 10px color-mix(in srgb, var(--c) 55%, transparent),
+			0 0 0 1px rgba(240, 192, 64, 0.9) inset,
+			0 0 14px rgba(240, 192, 64, 0.35) !important;
+	}
+	:global(.gh-note--high .gh-fret)::after {
+		content: ' ↑';
+		font-size: 0.6rem;
+		opacity: 0.9;
 	}
 
 	/* Fret number inside each note (0 = open string). */

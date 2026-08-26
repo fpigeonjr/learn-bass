@@ -3,6 +3,10 @@
 // No input: notes drop as a visual cue to play along on a real bass,
 // synced to a WebAudio metronome (accented downbeats).
 // Mobile-first: 4 lanes fill portrait width, large readable notes.
+import { STRING_COLORS, EXERCISES } from '../lib/warmup';
+
+// Pass the tested module into the client script (avoids TS in the <script> body).
+const STRINGS = ['E', 'A', 'D', 'G'] as const;
 ---
 
 <section class="gh">
@@ -42,17 +46,26 @@
 	</div>
 </section>
 
-<script define:vars={{}}>
-	import { STRINGS, STRING_COLORS, getExercise, stringAtBeat, secondsPerBeat, layOutNote, type StringId } from '../lib/warmup';
+<script define:vars={{ STRING_COLORS, EXERCISES, STRINGS }}>
+	// Plain JavaScript only — Astro <script> blocks do not strip TypeScript.
+	// Data (STRING_COLORS, EXERCISES, STRINGS) is passed in from the frontmatter.
 
-	const COLORS = STRING_COLORS;
+	function getExercise(id) {
+		return EXERCISES.find((e) => e.id === id) || EXERCISES[0];
+	}
 
-	const stage = document.getElementById('gh-stage')!;
-	const lanesEl = stage.querySelector('.gh-lanes')!;
-	const countEl = document.getElementById('gh-count')!;
-	const startBtn = document.getElementById('gh-start')!;
-	const exSel = document.getElementById('gh-exercise')! as HTMLSelectElement;
-	const tempoSel = document.getElementById('gh-tempo')! as HTMLSelectElement;
+	// chart index → string letter (order: E A D G), or null for a rest.
+	function stringAtBeat(ex, beat) {
+		const idx = ex.chart[beat % ex.chart.length];
+		return idx < 0 ? null : STRINGS[idx];
+	}
+
+	const stage = document.getElementById('gh-stage');
+	const lanesEl = stage.querySelector('.gh-lanes');
+	const countEl = document.getElementById('gh-count');
+	const startBtn = document.getElementById('gh-start');
+	const exSel = document.getElementById('gh-exercise');
+	const tempoSel = document.getElementById('gh-tempo');
 
 	// --- Track geometry ---
 	let strikeY = 0; // pixels from top of lanes where the strike line sits
@@ -62,22 +75,24 @@
 	}
 
 	// --- Audio engine (WebAudio metronome) ---
-	let audioCtx: AudioContext | null = null;
+	let audioCtx = null;
 	let running = false;
+	let countInActive = false; // guard so Stop during count-in is respected
 	let beatIdx = 0; // absolute beat counter
 	let nextBeatTime = 0; // audio-context time of the next beat
 	let rafId = 0;
-	let notes: HTMLElement[] = [];
+	let notes = [];
 	let beatDur = 0.5; // seconds per beat
-	let lookahead = 4; // beats of runway visible ahead
+	const lookahead = 4; // beats of runway visible ahead
 
 	function ensureAudio() {
 		if (!audioCtx) {
-			audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+			const AC = window.AudioContext || window.webkitAudioContext;
+			audioCtx = new AC();
 		}
 	}
 
-	function click(time: number, accent: boolean) {
+	function click(time, accent) {
 		if (!audioCtx) return;
 		const osc = audioCtx.createOscillator();
 		const gain = audioCtx.createGain();
@@ -91,49 +106,40 @@
 		osc.stop(time + 0.06);
 	}
 
-	function scheduleBeat(beat: number, time: number) {
+	function scheduleBeat(beat, time) {
 		const accent = beat % 4 === 0;
 		click(time, accent);
-		// spawn the note now, positioned far ahead in time
 		spawnNote(beat, time);
 	}
 
 	// --- Note rendering ---
-	function spawnNote(beat: number, time: number) {
+	function spawnNote(beat, time) {
 		const ex = getExercise(exSel.value);
 		const str = stringAtBeat(ex, beat);
 		if (!str) return; // rest — no note
-		const lane = lanesEl.querySelector(`[data-string="${str}"]`)!;
+		const lane = lanesEl.querySelector('[data-string="' + str + '"]');
 
 		const note = document.createElement('div');
 		note.className = 'gh-note';
-		note.style.setProperty('--c', COLORS[str]);
+		note.style.setProperty('--c', STRING_COLORS[str]);
 		note.dataset.time = String(time); // absolute audio-context strike time
 		lane.appendChild(note);
 		notes.push(note);
 	}
 
-	// Position each note based on where it sits in time relative to "now".
+	// Position each note based on where it sits relative to "now".
 	function layoutNotes() {
 		if (!running || !audioCtx) return;
 		const now = audioCtx.currentTime;
-		// strike line corresponds to time === now. A note scheduled at time T
-		// should be at the strike line when now === T. Runway spans `lookahead` beats.
 		const runwayPx = strikeY - 40;
+		const pxPerSec = runwayPx / (lookahead * beatDur);
 		for (const note of notes) {
 			const strikeTime = Number(note.dataset.time);
-			const layout = layOutNote({
-				strikeTime,
-				now,
-				strikeY,
-				runwayPx,
-				lookaheadBeats: lookahead,
-				bpm: Number(tempoSel.value),
-			});
-			note.style.transform = `translateY(${layout.y}px)`;
-			note.style.opacity = String(layout.opacity);
-			// remove notes well past the strike
-			if (layout.expired) note.remove();
+			const dt = strikeTime - now; // seconds until strike
+			const y = strikeY - dt * pxPerSec;
+			note.style.transform = 'translateY(' + y + 'px)';
+			note.style.opacity = dt < -0.15 ? '0.25' : '1';
+			if (dt < -0.5) note.remove();
 		}
 		notes = notes.filter((n) => n.isConnected);
 	}
@@ -141,7 +147,6 @@
 	// --- Main loop ---
 	function tick() {
 		if (!running || !audioCtx) return;
-		// schedule any beats whose time fell in the last frame
 		while (nextBeatTime < audioCtx.currentTime + 0.12) {
 			scheduleBeat(beatIdx, nextBeatTime);
 			beatIdx++;
@@ -152,12 +157,15 @@
 	}
 
 	// --- Count-in ---
-	function countIn(cb: () => void) {
+	function countIn(cb) {
+		countInActive = true;
 		countEl.hidden = false;
 		let n = 4;
 		const label = ['1', '2', '3', '4'];
 		function step() {
+			if (!countInActive) return; // stopped early
 			if (n === 0) {
+				countInActive = false;
 				countEl.hidden = true;
 				cb();
 				return;
@@ -172,6 +180,7 @@
 
 	function stop() {
 		running = false;
+		countInActive = false;
 		cancelAnimationFrame(rafId);
 		notes.forEach((n) => n.remove());
 		notes = [];
@@ -184,11 +193,10 @@
 	function start() {
 		ensureAudio();
 		measure();
-		beatDur = secondsPerBeat(Number(tempoSel.value));
+		beatDur = 60 / Number(tempoSel.value);
 		startBtn.textContent = 'Stop';
 		startBtn.classList.add('running');
 
-		// Clear any stale notes
 		notes.forEach((n) => n.remove());
 		notes = [];
 
@@ -207,15 +215,13 @@
 		else start();
 	});
 
-	// Re-measure on resize / orientation change
 	window.addEventListener('resize', measure);
-
 	measure();
 
-	// Pre-render lane labels + build lanes layout immediately
-	lanesEl.querySelectorAll<HTMLElement>('.gh-lane').forEach((lane) => {
-		const str = lane.dataset.string as StringId;
-		lane.style.setProperty('--c', COLORS[str]);
+	// Color the lane labels.
+	lanesEl.querySelectorAll('.gh-lane').forEach((lane) => {
+		const str = lane.dataset.string;
+		lane.style.setProperty('--c', STRING_COLORS[str]);
 	});
 </script>
 

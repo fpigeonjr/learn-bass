@@ -2,6 +2,10 @@
 import Layout from '../../layouts/Layout.astro';
 import WarmupGame from '../../components/WarmupGame.astro';
 import { url } from '../../lib/url';
+import { EXERCISES } from '../../lib/warmup';
+
+// Warm-up exercises → chart tracks (id, label, notes).
+const tracks = EXERCISES.map((e) => ({ id: e.id, label: e.label, notes: e.chart }));
 ---
 
 <Layout title="Warm-ups & Right Hand">
@@ -40,7 +44,7 @@ import { url } from '../../lib/url';
 
 		<h2>Play-along chart</h2>
 		<p class="muted">Pick an exercise, set the tempo, hit Start. A four-count leads you in, then play the falling notes on your bass in time with the click. No tapping — it's a visual cue.</p>
-		<WarmupGame />
+		<WarmupGame heading="Exercise" tracks={tracks} />
 	</main>
 </Layout>
 

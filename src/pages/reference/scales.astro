@@ -1,6 +1,11 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import WarmupGame from '../../components/WarmupGame.astro';
 import { url } from '../../lib/url';
+import { SCALES } from '../../lib/scales';
+
+// Scales → chart tracks (id, label, notes).
+const tracks = SCALES.map((s) => ({ id: s.id, label: s.label, notes: s.notes }));
 ---
 
 <Layout title="Scales & Arpeggios">
@@ -31,6 +36,10 @@ A  | D E |
 			<h2>Arpeggios</h2>
 			<p>The real bass language — chord tones. Major, minor, dominant 7. DeLeo's lines are built from these.</p>
 		</article>
+
+		<h2>Play-along chart</h2>
+		<p class="muted">Pick a scale, set the tempo, hit Start. Play the falling notes up and down the scale in time with the click — string plus fret on each block.</p>
+		<WarmupGame heading="Scale" tracks={tracks} />
 	</main>
 </Layout>
 

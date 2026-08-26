@@ -34,17 +34,26 @@ test.describe('warm-up play-along chart', () => {
 			.poll(async () => page.locator('.gh-note').count(), { timeout: 6_000 })
 			.toBeGreaterThan(0);
 
-		// Each note carries an absolute strike time; as "now" advances, the
-		// note's vertical offset (translateY) grows until it reaches the strike
-		// line. Track the newest note (freshest on the runway) and confirm it
-		// moves downward between two samples.
-		const readOffset = (el) => {
-			const m = el.style.transform.match(/translateY\((-?[\d.]+)px\)/);
-			return m ? Number.parseFloat(m[1]) : null;
-		};
-		const firstOffset = await page.locator('.gh-note').last().evaluate(readOffset);
+		// Each note carries an absolute strike time; as "now" advances, its
+		// vertical offset (translateY) grows until it reaches the strike line.
+		// Track a specific note by data-beat so removal/replacement can't skew
+		// the measurement.
+		const readBeatOffset = (beat) =>
+			page
+				.locator(`.gh-note[data-beat="${beat}"]`)
+				.evaluate((el) => {
+					const m = el.style.transform.match(/translateY\((-?[\d.]+)px\)/);
+					return m ? Number.parseFloat(m[1]) : null;
+				});
+
+		// Choose a note a couple beats in (plenty of runway left to fall).
+		const beat = await page
+			.locator('.gh-note')
+			.last()
+			.evaluate((el) => el.dataset.beat);
+		const firstOffset = await readBeatOffset(beat!);
 		await page.waitForTimeout(300);
-		const secondOffset = await page.locator('.gh-note').last().evaluate(readOffset);
+		const secondOffset = await readBeatOffset(beat!);
 
 		expect(firstOffset).not.toBeNull();
 		expect(secondOffset).not.toBeNull();

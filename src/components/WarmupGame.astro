@@ -1,21 +1,30 @@
 ---
-// WarmupGame — Guitar Hero–style falling-note play-along for bass.
+// ChartPlayer — Guitar Hero–style falling-note play-along for bass.
 // No input: notes drop as a visual cue to play along on a real bass,
 // synced to a WebAudio metronome (accented downbeats).
 // Mobile-first: 4 lanes fill portrait width, large readable notes.
-import { STRING_COLORS, EXERCISES, STRINGS } from '../lib/warmup';
+//
+// Props: a list of tracks (each = a note sequence to loop) and a heading
+// to label the track picker. Shared by warm-ups and scales.
+import { STRING_COLORS, STRINGS } from '../lib/warmup';
+import type { StringId } from '../lib/warmup';
 
+interface Props {
+	heading?: string;
+	tracks: { id: string; label: string; notes: ({ string: StringId; fret: number } | null)[] }[];
+}
+
+const { heading = 'Pattern', tracks = [] } = Astro.props;
 ---
 
 <section class="gh">
 	<div class="gh-controls">
 		<label class="gh-field">
-			<span>Exercise</span>
+			<span>{heading}</span>
 			<select id="gh-exercise">
-				<option value="alternation">Open-string alternation</option>
-				<option value="crossing">String crossing</option>
-				<option value="spider">Spider 1-2-3-4</option>
-				<option value="roots">Root-pulse (E A D G)</option>
+				{tracks.map((t) => (
+					<option value={t.id}>{t.label}</option>
+				))}
 			</select>
 		</label>
 		<label class="gh-field">
@@ -44,17 +53,13 @@ import { STRING_COLORS, EXERCISES, STRINGS } from '../lib/warmup';
 	</div>
 </section>
 
-<script define:vars={{ STRING_COLORS, EXERCISES, STRINGS }}>
+<script define:vars={{ STRING_COLORS, STRINGS, tracks }}>
 	// Plain JavaScript only — Astro <script> blocks do not strip TypeScript.
-	// Data (STRING_COLORS, EXERCISES, STRINGS) is passed in from the frontmatter.
+	// Data (STRING_COLORS, STRINGS, tracks) is passed in from the frontmatter.
 
-	function getExercise(id) {
-		return EXERCISES.find((e) => e.id === id) || EXERCISES[0];
-	}
-
-	// note on a given beat = { string, fret }, or null for a rest.
-	function noteAtBeat(ex, beat) {
-		return ex.chart[beat % ex.chart.length];
+	// note on a given beat (loops over the selected track's notes).
+	function noteAtBeat(track, beat) {
+		return track.notes[beat % track.notes.length];
 	}
 
 	const stage = document.getElementById('gh-stage');
@@ -112,8 +117,8 @@ import { STRING_COLORS, EXERCISES, STRINGS } from '../lib/warmup';
 
 	// --- Note rendering ---
 	function spawnNote(beat, time) {
-		const ex = getExercise(exSel.value);
-		const note = noteAtBeat(ex, beat);
+		const track = tracks.find((t) => t.id === exSel.value) || tracks[0];
+		const note = noteAtBeat(track, beat);
 		if (!note) return; // rest — no note
 		const lane = lanesEl.querySelector('[data-string="' + note.string + '"]');
 
@@ -121,6 +126,7 @@ import { STRING_COLORS, EXERCISES, STRINGS } from '../lib/warmup';
 		el.className = 'gh-note';
 		el.style.setProperty('--c', STRING_COLORS[note.string]);
 		el.dataset.time = String(time); // absolute audio-context strike time
+		el.dataset.beat = String(beat); // absolute beat index (for test identity)
 
 		// Fret number on the block (0 = open string).
 		const fret = document.createElement('span');

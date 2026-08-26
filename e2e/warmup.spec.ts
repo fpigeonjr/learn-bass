@@ -10,8 +10,8 @@ test.describe('warm-up play-along chart', () => {
 	test('starts with a Start button and four labeled lanes', async ({ page }) => {
 		await expect(page.locator('#gh-start')).toHaveText('Start');
 		const labels = await page.locator('.gh-lane .gh-label').allTextContents();
-		// Lanes are laid out G, D, A, E (high to low, left to right on screen).
-		expect(labels).toEqual(['G', 'D', 'A', 'E']);
+		// Lanes are laid out E, A, D, G (low to high, left to right on screen).
+		expect(labels).toEqual(['E', 'A', 'D', 'G']);
 	});
 
 	test('clicking Start runs a count-in, then drops notes that fall', async ({ page }) => {
@@ -26,8 +26,7 @@ test.describe('warm-up play-along chart', () => {
 		await expect(count).toBeVisible();
 		expect(['1', '2', '3', '4']).toContain(await count.textContent());
 
-		// At 120 bpm the 4-count is 0.5s/beat (2s total). Notes appear after that.
-		// Use the default 80 bpm → 0.75s/beat → 3s count-in. Speed it up for the test.
+		// Speed up the count-in: 120 bpm → 0.5s/beat → 2s lead-in.
 		await page.selectOption('#gh-tempo', '120');
 
 		// Wait for the count-in to finish (notes only spawn once `running` is true).
@@ -35,19 +34,22 @@ test.describe('warm-up play-along chart', () => {
 			.poll(async () => page.locator('.gh-note').count(), { timeout: 6_000 })
 			.toBeGreaterThan(0);
 
-		// Notes should be moving: capture a note's transform, wait, capture again.
-		const firstY = await page
-			.locator('.gh-note')
-			.first()
-			.evaluate((el) => el.style.transform);
-		await page.waitForTimeout(400);
-		const secondY = await page
-			.locator('.gh-note')
-			.first()
-			.evaluate((el) => el.style.transform);
+		// Each note carries an absolute strike time; as "now" advances, the
+		// note's vertical offset (translateY) grows until it reaches the strike
+		// line. Track the newest note (freshest on the runway) and confirm it
+		// moves downward between two samples.
+		const readOffset = (el) => {
+			const m = el.style.transform.match(/translateY\((-?[\d.]+)px\)/);
+			return m ? Number.parseFloat(m[1]) : null;
+		};
+		const firstOffset = await page.locator('.gh-note').last().evaluate(readOffset);
+		await page.waitForTimeout(300);
+		const secondOffset = await page.locator('.gh-note').last().evaluate(readOffset);
 
-		// The note's translateY should have changed while falling.
-		expect(secondY).not.toBe(firstY);
+		expect(firstOffset).not.toBeNull();
+		expect(secondOffset).not.toBeNull();
+		// Falling downward = translateY increases toward the strike line.
+		expect(secondOffset!).toBeGreaterThan(firstOffset!);
 	});
 
 	test('clicking Stop clears notes and resets the button', async ({ page }) => {

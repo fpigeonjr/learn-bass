@@ -36,10 +36,10 @@ const STRINGS = ['E', 'A', 'D', 'G'] as const;
 
 	<div class="gh-stage" id="gh-stage">
 		<div class="gh-lanes">
-			<div class="gh-lane" data-string="G"><span class="gh-label">G</span></div>
-			<div class="gh-lane" data-string="D"><span class="gh-label">D</span></div>
-			<div class="gh-lane" data-string="A"><span class="gh-label">A</span></div>
 			<div class="gh-lane" data-string="E"><span class="gh-label">E</span></div>
+			<div class="gh-lane" data-string="A"><span class="gh-label">A</span></div>
+			<div class="gh-lane" data-string="D"><span class="gh-label">D</span></div>
+			<div class="gh-lane" data-string="G"><span class="gh-label">G</span></div>
 		</div>
 		<div class="gh-strike"></div>
 		<div class="gh-count" id="gh-count" hidden></div>
@@ -78,8 +78,10 @@ const STRINGS = ['E', 'A', 'D', 'G'] as const;
 	let audioCtx = null;
 	let running = false;
 	let countInActive = false; // guard so Stop during count-in is respected
-	let beatIdx = 0; // absolute beat counter
-	let nextBeatTime = 0; // audio-context time of the next beat
+	let beatIdx = 0; // absolute beat counter (clicks)
+	let nextBeatTime = 0; // audio-context time of the next click
+	let noteBeat = 0; // absolute beat counter (notes)
+	let nextNoteTime = 0; // audio-context time of the next note to spawn
 	let rafId = 0;
 	let notes = [];
 	let beatDur = 0.5; // seconds per beat
@@ -106,10 +108,9 @@ const STRINGS = ['E', 'A', 'D', 'G'] as const;
 		osc.stop(time + 0.06);
 	}
 
-	function scheduleBeat(beat, time) {
+	function scheduleClick(beat, time) {
 		const accent = beat % 4 === 0;
 		click(time, accent);
-		spawnNote(beat, time);
 	}
 
 	// --- Note rendering ---
@@ -147,11 +148,22 @@ const STRINGS = ['E', 'A', 'D', 'G'] as const;
 	// --- Main loop ---
 	function tick() {
 		if (!running || !audioCtx) return;
-		while (nextBeatTime < audioCtx.currentTime + 0.12) {
-			scheduleBeat(beatIdx, nextBeatTime);
+		const now = audioCtx.currentTime;
+
+		// Schedule clicks a hair ahead so the audible metronome stays tight.
+		while (nextBeatTime < now + 0.12) {
+			scheduleClick(beatIdx, nextBeatTime);
 			beatIdx++;
 			nextBeatTime += beatDur;
 		}
+
+		// Spawn notes `lookahead` beats early so they have a runway to fall.
+		while (nextNoteTime < now + lookahead * beatDur) {
+			spawnNote(noteBeat, nextNoteTime);
+			noteBeat++;
+			nextNoteTime += beatDur;
+		}
+
 		layoutNotes();
 		rafId = requestAnimationFrame(tick);
 	}
@@ -185,6 +197,7 @@ const STRINGS = ['E', 'A', 'D', 'G'] as const;
 		notes.forEach((n) => n.remove());
 		notes = [];
 		beatIdx = 0;
+		noteBeat = 0;
 		countEl.hidden = true;
 		startBtn.textContent = 'Start';
 		startBtn.classList.remove('running');
@@ -205,7 +218,9 @@ const STRINGS = ['E', 'A', 'D', 'G'] as const;
 			audioCtx.resume();
 			running = true;
 			beatIdx = 0;
-			nextBeatTime = audioCtx.currentTime + 0.1;
+			nextBeatTime = audioCtx.currentTime + 0.15;
+			noteBeat = 0;
+			nextNoteTime = nextBeatTime;
 			rafId = requestAnimationFrame(tick);
 		});
 	}
@@ -313,7 +328,8 @@ const STRINGS = ['E', 'A', 'D', 'G'] as const;
 		box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
 	}
 
-	.gh-note {
+	/* Dynamically-created notes carry no scoped id, so use :global. */
+	:global(.gh-note) {
 		position: absolute;
 		top: 0;
 		left: 6%;
@@ -339,7 +355,7 @@ const STRINGS = ['E', 'A', 'D', 'G'] as const;
 	}
 
 	@media (min-width: 720px) {
-		.gh-note { height: 26px; }
+		:global(.gh-note) { height: 26px; }
 	}
 
 	@media (max-width: 480px) {
@@ -348,6 +364,6 @@ const STRINGS = ['E', 'A', 'D', 'G'] as const;
 		.gh-field select { width: 100%; font-size: 1rem; padding: 0.6rem; }
 		.gh-start { width: 100%; min-height: 48px; font-size: 1.1rem; }
 		.gh-stage { height: 50vh; min-height: 280px; }
-		.gh-note { height: 20px; }
+		:global(.gh-note) { height: 20px; }
 	}
 </style>

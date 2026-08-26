@@ -48,7 +48,7 @@ a { color: var(--gh-orange); }
 .wrap {
 	max-width: 60rem;
 	margin: 0 auto;
-	padding: 2.5rem 2.5rem 4rem;
+	padding: 3rem 3rem 4rem;
 }
 
 .site-header {
@@ -75,7 +75,7 @@ a { color: var(--gh-orange); }
 .site-header .inner {
 	max-width: 60rem;
 	margin: 0 auto;
-	padding: 0 2.5rem;
+	padding: 0 3rem;
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
@@ -280,6 +280,6 @@ nav a { margin-left: 0; }
 	.board .info { flex: 1 1 100%; }
 	.board a, .board .pill { margin-left: 0; flex: 0 0 auto; }
 	.status { margin-left: 1.7rem; }
-	.wrap { padding: 1.5rem 1.25rem 3rem; }
-	.site-header .inner { padding: 0 1.25rem; }
+	.wrap { padding: 2rem 1.75rem 3rem; }
+	.site-header .inner { padding: 0 1.75rem; }
 }

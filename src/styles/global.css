@@ -1,20 +1,20 @@
-/* Site chrome (dashboard/app), distinct from the course.css print aesthetic. */
+/* Site chrome — LOUD stage edition. */
 
 :root {
-	--bg: #0e0c0a;
+	--bg: #0a0a0c;
 	--panel: #1b1815;
 	--panel-2: #221e1a;
 	--ink: #f2ede6;
 	--muted: #a39b90;
-	--accent: #e07a3f;
+	--accent: #ff3b30;
 	--accent-2: #2eb872;
 	--rule: #2f2a24;
 	--red: #e05555;
 	--gh-green: #2eb872;
-	--gh-red: #e05555;
-	--gh-yellow: #f0c040;
-	--gh-blue: #4a90d9;
-	--gh-orange: #e07a3f;
+	--gh-red: #ff3b30;
+	--gh-yellow: #ffcc00;
+	--gh-blue: #0096ff;
+	--gh-orange: #ff6b00;
 }
 
 * { box-sizing: border-box; }
@@ -24,72 +24,145 @@ html { -webkit-text-size-adjust: 100%; }
 body {
 	margin: 0;
 	background:
-		radial-gradient(ellipse 90% 55% at 50% -10%, rgba(224, 122, 63, 0.18), transparent 60%),
-		radial-gradient(ellipse 70% 45% at 15% 0%, rgba(74, 144, 217, 0.12), transparent 55%),
-		radial-gradient(ellipse 70% 45% at 85% 0%, rgba(46, 184, 114, 0.10), transparent 55%),
-		var(--bg);
+		radial-gradient(ellipse 120% 70% at 50% -15%, rgba(255,59,48,0.22), transparent 55%),
+		radial-gradient(ellipse 80% 50% at 10% 0%, rgba(0,150,255,0.18), transparent 50%),
+		radial-gradient(ellipse 80% 50% at 90% 0%, rgba(46,184,114,0.15), transparent 50%),
+		radial-gradient(ellipse 100% 100% at 50% 100%, rgba(255,204,0,0.06), transparent 70%),
+		#08080a;
 	color: var(--ink);
 	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 	line-height: 1.55;
+	position: relative;
+}
+body::before {
+	content: "";
+	position: fixed;
+	inset: 0;
+	background: repeating-linear-gradient(90deg, transparent 0 80px, rgba(255,255,255,0.015) 80px 81px);
+	pointer-events: none;
+	z-index: -1;
 }
 
-a { color: var(--accent); }
+a { color: var(--gh-orange); }
 
 .wrap {
 	max-width: 60rem;
 	margin: 0 auto;
-	padding: 2rem 2rem 4rem;
+	padding: 2.5rem 2.5rem 4rem;
 }
 
 .site-header {
-	border-bottom: 1px solid var(--rule);
-	padding: 1.25rem 0;
-	background: linear-gradient(180deg, #1f1b18 0%, var(--panel) 100%);
-	box-shadow: 0 2px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(224,122,63,0.08) inset;
+	border-bottom: 3px solid #2a2a2e;
+	padding: 1.1rem 0 1rem;
+	background: linear-gradient(180deg, #1a1a1e 0%, #0f0f12 100%);
+	box-shadow: 0 4px 30px rgba(0,0,0,0.8), 0 1px 0 rgba(255,59,48,0.15) inset;
+	position: relative;
+	overflow: hidden;
+}
+.site-header::after {
+	content: "● ● ● ● ●";
+	position: absolute;
+	bottom: 3px;
+	left: 50%;
+	transform: translateX(-50%);
+	letter-spacing: 0.6em;
+	font-size: 0.55rem;
+	color: var(--gh-green);
+	text-shadow: 0 0 8px var(--gh-green), 6px 0 8px var(--gh-red), 12px 0 8px var(--gh-yellow), 18px 0 8px var(--gh-blue), 24px 0 8px var(--gh-orange);
+	opacity: 0.5;
+	pointer-events: none;
 }
 .site-header .inner {
 	max-width: 60rem;
 	margin: 0 auto;
-	padding: 0 2rem;
+	padding: 0 2.5rem;
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
 	gap: 1rem;
 	flex-wrap: wrap;
 }
-.brand { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.01em; }
-.brand .muted { font-weight: 400; }
-nav a { margin-left: 1.25rem; color: var(--muted); text-decoration: none; }
-nav a:hover { color: var(--ink); }
+.brand {
+	font-size: 1.5rem;
+	font-weight: 900;
+	letter-spacing: -0.02em;
+	text-transform: uppercase;
+	font-style: italic;
+	text-shadow: 0 0 20px rgba(255,59,48,0.4), 0 2px 0 #000;
+}
+.brand .muted { font-weight: 400; font-style: normal; text-transform: none; font-size: 0.9rem; opacity: 0.6; }
+nav a { margin-left: 1.25rem; color: var(--muted); text-decoration: none; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; font-size: 0.85rem; }
+nav a:hover { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
 
-h1 { font-size: 2rem; letter-spacing: -0.02em; margin: 2rem 0 0.5rem; }
-h2 { font-size: 1.35rem; margin: 2.25rem 0 0.75rem; }
+h1 {
+	font-size: 2.8rem;
+	letter-spacing: -0.03em;
+	margin: 1.5rem 0 0.5rem;
+	font-weight: 900;
+	font-style: italic;
+	text-transform: uppercase;
+	line-height: 0.95;
+	text-shadow: 0 0 30px rgba(255,59,48,0.3), 0 2px 0 #000, 0 4px 12px rgba(0,0,0,0.8);
+	background: linear-gradient(180deg, #fff 30%, #ffb4a8 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+h2 { font-size: 1.4rem; margin: 2.25rem 0 0.75rem; font-weight: 800; letter-spacing: -0.01em; text-transform: uppercase; }
 .muted { color: var(--muted); }
-.lead { font-size: 1.1rem; color: var(--muted); max-width: 46rem; }
+.lead { font-size: 1.15rem; color: var(--muted); max-width: 46rem; border-left: 3px solid var(--gh-red); padding-left: 1rem; }
 
 .stat-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 	gap: 0.75rem;
-	margin: 1.25rem 0;
+	margin: 1.5rem 0;
 }
 .stat {
-	background: linear-gradient(180deg, #222 0%, var(--panel) 100%);
-	border: 1px solid var(--rule);
+	background: linear-gradient(180deg, #1e1e22 0%, #141418 100%);
+	border: 2px solid #2a2a2e;
+	border-top-width: 3px;
 	border-radius: 10px;
-	padding: 0.9rem 1rem;
-	box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+	padding: 1rem 1rem;
+	box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+	position: relative;
+	overflow: hidden;
 }
-.stat .num { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; }
-.stat .lbl { color: var(--muted); font-size: 0.85rem; }
+.stat:nth-child(1) { border-top-color: var(--gh-red); }
+.stat:nth-child(2) { border-top-color: var(--gh-green); }
+.stat:nth-child(3) { border-top-color: var(--gh-yellow); }
+.stat:nth-child(4) { border-top-color: var(--gh-blue); }
+.stat:nth-child(5) { border-top-color: var(--gh-orange); }
+.stat::after {
+	content: "";
+	position: absolute;
+	top: 0; left: 0; right: 0;
+	height: 1px;
+	background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+}
+.stat .num { font-size: 2rem; font-weight: 900; letter-spacing: -0.02em; font-style: italic; text-shadow: 0 0 15px currentColor; }
+.stat:nth-child(1) .num { color: var(--gh-red); }
+.stat:nth-child(2) .num { color: var(--gh-green); }
+.stat:nth-child(3) .num { color: var(--gh-yellow); }
+.stat:nth-child(4) .num { color: var(--gh-blue); }
+.stat:nth-child(5) .num { color: var(--gh-orange); }
+.stat .lbl { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; }
 
 .card {
-	background: linear-gradient(180deg, #201c19 0%, var(--panel) 100%);
-	border: 1px solid var(--rule);
+	background: linear-gradient(180deg, #1e1c1a 0%, #161412 100%);
+	border: 2px solid #2a2520;
 	border-radius: 12px;
-	padding: 1.35rem 1.5rem;
-	margin: 1.25rem 0;
-	box-shadow: 0 4px 20px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.03) inset;
+	padding: 1.5rem 1.75rem;
+	margin: 1.5rem 0;
+	box-shadow: 0 8px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset, 0 1px 0 rgba(255,255,255,0.06) inset;
+	position: relative;
+}
+.card::before {
+	content: "";
+	position: absolute;
+	top: 0; left: 1.2rem; right: 1.2rem;
+	height: 1px;
+	background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
 }
 
 /* Setlist board */
@@ -98,128 +171,115 @@ h2 { font-size: 1.35rem; margin: 2.25rem 0 0.75rem; }
 	display: flex;
 	align-items: center;
 	gap: 0.9rem;
-	padding: 0.7rem 0.1rem;
-	border-bottom: 1px solid var(--rule);
+	padding: 0.85rem 0.5rem;
+	border-bottom: 1px solid #2a2520;
+	transition: background 0.15s;
 }
+.board li:hover { background: rgba(255,59,48,0.04); }
 .board li:last-child { border-bottom: none; }
 .board .order {
 	flex: 0 0 1.7rem;
-	color: var(--muted);
+	color: var(--gh-yellow);
 	font-variant-numeric: tabular-nums;
 	font-size: 0.9rem;
+	font-weight: 800;
+	text-shadow: 0 0 8px rgba(255,204,0,0.3);
 }
 .board .info { flex: 1; min-width: 0; }
-.board .title { font-weight: 600; }
+.board .title { font-weight: 800; letter-spacing: -0.01em; }
 .board .artist { color: var(--muted); font-size: 0.85rem; }
 .badge {
-	font-size: 0.7rem;
+	font-size: 0.65rem;
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	padding: 0.1rem 0.45rem;
+	letter-spacing: 0.08em;
+	padding: 0.2rem 0.5rem;
 	border-radius: 4px;
 	border: 1px solid var(--rule);
 	color: var(--muted);
+	font-weight: 700;
 }
-.badge.backup { color: var(--muted); }
-.badge.green { color: var(--accent-2); border-color: var(--accent-2); }
+.badge.backup { color: var(--muted); background: rgba(255,255,255,0.04); }
+.badge.green { color: var(--gh-green); border-color: var(--gh-green); background: rgba(46,184,114,0.12); box-shadow: 0 0 8px rgba(46,184,114,0.3); }
 
 .status {
 	display: inline-flex;
 	flex-direction: column;
 	gap: 1px;
-	border: 1px solid var(--rule);
-	border-radius: 6px;
+	border: 2px solid #2a2520;
+	border-radius: 8px;
 	overflow: hidden;
+	background: #0a0a0c;
+	box-shadow: 0 2px 10px rgba(0,0,0,0.4);
 }
 .status button {
-	background: var(--panel-2);
+	background: #1a1a1e;
 	color: var(--muted);
 	border: none;
-	font-size: 0.7rem;
-	padding: 0.2rem 0.55rem;
+	font-size: 0.68rem;
+	padding: 0.3rem 0.6rem;
 	cursor: pointer;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	transition: all 0.15s;
 }
-.status button:hover { background: #2a251f; filter: brightness(1.15); }
-.status button.active[data-set="cold"] { background: var(--gh-blue); color: #0a1628; font-weight: 700; box-shadow: 0 0 10px rgba(74,144,217,0.6); }
-.status button.active[data-set="dusty"] { background: var(--gh-yellow); color: #1a1400; font-weight: 700; box-shadow: 0 0 10px rgba(240,192,64,0.6); }
-.status button.active[data-set="warm"] { background: var(--gh-orange); color: #1a1008; font-weight: 700; box-shadow: 0 0 10px rgba(224,122,63,0.6); }
-.status button.active[data-set="green"] { background: var(--gh-green); color: #071a10; font-weight: 700; box-shadow: 0 0 12px rgba(46,184,114,0.7); }
-.status button.active { border-radius: 4px; }
+.status button:hover { background: #2a2a30; color: #fff; }
+.status button.active[data-set="cold"] { background: var(--gh-blue); color: #fff; font-weight: 800; box-shadow: 0 0 14px rgba(0,150,255,0.7), inset 0 1px 0 rgba(255,255,255,0.3); text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.status button.active[data-set="dusty"] { background: var(--gh-yellow); color: #1a1400; font-weight: 800; box-shadow: 0 0 14px rgba(255,204,0,0.7), inset 0 1px 0 rgba(255,255,255,0.4); }
+.status button.active[data-set="warm"] { background: var(--gh-orange); color: #fff; font-weight: 800; box-shadow: 0 0 14px rgba(255,107,0,0.7), inset 0 1px 0 rgba(255,255,255,0.3); text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.status button.active[data-set="green"] { background: var(--gh-green); color: #fff; font-weight: 800; box-shadow: 0 0 16px rgba(46,184,114,0.8), inset 0 1px 0 rgba(255,255,255,0.3); text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.status button.active { border-radius: 0; }
 
 .pill {
 	display: inline-block;
-	font-size: 0.75rem;
-	padding: 0.2rem 0.6rem;
+	font-size: 0.72rem;
+	padding: 0.3rem 0.7rem;
 	border-radius: 999px;
 	border: 1px solid var(--rule);
 	color: var(--ink);
+	font-weight: 600;
 }
 
-/* warm-up checklist */
 .checklist { list-style: none; padding: 0; margin: 0; }
 .checklist li {
 	display: flex;
 	align-items: flex-start;
 	gap: 0.6rem;
-	padding: 0.45rem 0;
-	border-bottom: 1px solid var(--rule);
+	padding: 0.6rem 0;
+	border-bottom: 1px solid #2a2520;
 }
 .checklist li:last-child { border-bottom: none; }
-.checklist input { margin-top: 0.3rem; accent-color: var(--accent-2); width: 1.1em; height: 1.1em; }
+.checklist input { margin-top: 0.3rem; accent-color: var(--gh-green); width: 1.15em; height: 1.15em; }
 .checklist label { cursor: pointer; }
 .checklist .step { color: var(--muted); font-size: 0.85rem; }
 .checklist input:checked + span .lbl { text-decoration: line-through; color: var(--muted); }
 
-.next-card { border-left: 3px solid var(--accent); background: linear-gradient(90deg, rgba(224,122,63,0.08), transparent 60%), linear-gradient(180deg, #201c19, var(--panel)); }
-.next-card .label { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.75rem; color: var(--accent); }
+.next-card { border-left: 4px solid var(--gh-red); background: linear-gradient(90deg, rgba(255,59,48,0.12), transparent 70%), linear-gradient(180deg, #1e1c1a, #161412); box-shadow: 0 0 20px rgba(255,59,48,0.15); }
+.next-card .label { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; color: var(--gh-red); font-weight: 800; }
 
-.footer { color: var(--muted); font-size: 0.85rem; margin-top: 3rem; opacity: 0.7; }
+.footer { color: var(--muted); font-size: 0.85rem; margin-top: 3rem; opacity: 0.5; text-align: center; letter-spacing: 0.04em; }
 
 /* ---- Mobile-first tightening ---- */
-
-/* Header: let nav wrap cleanly on narrow screens and keep brand intact. */
 .site-header .inner { gap: 0.5rem; }
 nav { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; }
 nav a { margin-left: 0; }
-
-/* Board rows: let title/artist wrap instead of clipping. */
-.board .title,
-.badge,
-.pill { overflow-wrap: anywhere; }
+.board .title, .badge, .pill { overflow-wrap: anywhere; }
 .board .artist { overflow-wrap: break-word; }
-
-/* Status buttons: horizontal row, comfortable tap targets (≥44px). */
 .status { flex-direction: row; }
-.status button {
-	padding: 0.45rem 0.6rem;
-	font-size: 0.72rem;
-	min-width: 44px;
-	min-height: 44px;
-}
+.status button { padding: 0.5rem 0.7rem; font-size: 0.7rem; min-width: 44px; min-height: 44px; }
 
-/* Narrow screens: tighten type, right-align row controls. */
 @media (max-width: 640px) {
-	.board a,
-	.board .pill { margin-left: auto; flex-shrink: 0; padding: 0.4rem 0.6rem; min-height: 44px; display: inline-flex; align-items: center; }
-	h1 { font-size: 1.65rem; }
+	.board a, .board .pill { margin-left: auto; flex-shrink: 0; padding: 0.4rem 0.6rem; min-height: 44px; display: inline-flex; align-items: center; }
+	h1 { font-size: 2rem; }
 	h2 { font-size: 1.25rem; }
-
-	/* Reference articles (scales, warm-ups, glossary) — comfortable reading on phones */
 	.course-article { font-size: 16px; }
 	.course-article .tab { font-size: 0.82rem; padding: 0.85rem 1rem; }
 }
-
-/* Very narrow: let the right-hand control (status row / link) wrap onto its
-   own line so the song title never collides with four status buttons. */
 @media (max-width: 480px) {
-	.board li {
-		flex-wrap: wrap;
-		row-gap: 0.5rem;
-	}
+	.board li { flex-wrap: wrap; row-gap: 0.5rem; }
 	.board .info { flex: 1 1 100%; }
-	.board a,
-	.board .pill { margin-left: 0; flex: 0 0 auto; }
+	.board a, .board .pill { margin-left: 0; flex: 0 0 auto; }
 	.status { margin-left: 1.7rem; }
-	.wrap { padding: 1.25rem 1.25rem 3rem; }
+	.wrap { padding: 1.5rem 1.25rem 3rem; }
 	.site-header .inner { padding: 0 1.25rem; }
 }

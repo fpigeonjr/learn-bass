@@ -12,12 +12,28 @@ export interface ScaleDef {
 
 const n = (string: StringId, fret: number): Slot => ({ string, fret });
 
+// Shift every fretted note up by `semitones` (open 0 becomes 12, etc.).
+function shift(notes: Slot[], semitones: number): Slot[] {
+	return notes.map((s) => (s ? { string: s.string, fret: s.fret + semitones } : s));
+}
+
 // Ascend one octave, then descend back to the root — the classic
 // "run the scale" exercise that loops naturally.
 function ascendDescend(ascending: Slot[]): Slot[] {
 	const down = [...ascending].reverse();
 	// Drop the duplicate root at the turn-around, re-add descending without it.
 	return [...ascending, ...down.slice(1)];
+}
+
+// Single exercise up the fretboard: low position → high position (+12)
+// then back down, so you climb the neck in one chart.
+function upTheBoard(ascending: Slot[]): Slot[] {
+	const low = ascending;
+	const high = shift(ascending, 12);
+	// Ascend low, ascend high, then descend high, descend low (one continuous run).
+	const up = [...low, ...high];
+	const down = [...high].reverse().slice(1).concat([...low].reverse());
+	return [...up, ...down];
 }
 
 // E minor pentatonic: E G A B D (up to octave E, then G).
@@ -71,22 +87,22 @@ export const SCALES: ScaleDef[] = [
 	{
 		id: 'em-pentatonic',
 		label: 'E minor pentatonic',
-		notes: ascendDescend(emPentatonicAscending),
+		notes: upTheBoard(emPentatonicAscending),
 	},
 	{
 		id: 'em-blues',
 		label: 'Blues (E)',
-		notes: ascendDescend(emBluesAscending),
+		notes: upTheBoard(emBluesAscending),
 	},
 	{
 		id: 'g-major',
 		label: 'G major',
-		notes: ascendDescend(gMajorAscending),
+		notes: upTheBoard(gMajorAscending),
 	},
 	{
 		id: 'a-minor',
 		label: 'A minor',
-		notes: ascendDescend(aMinorAscending),
+		notes: upTheBoard(aMinorAscending),
 	},
 ];
 

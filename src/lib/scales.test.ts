@@ -81,6 +81,17 @@ describe('SCALES', () => {
 			{ string: 'G', fret: 2 }, // A
 		]);
 	});
+
+	it('scales climb the fretboard (high position frets 12+)', () => {
+		for (const scale of SCALES) {
+			const hasHigh = scale.notes.some((s) => s && s.fret >= 12);
+			expect(hasHigh, `${scale.id} should have notes up the board`).toBe(true);
+		}
+		// E minor pentatonic low E0 appears again as E12 up the board
+		const em = getScale('em-pentatonic');
+		expect(em.notes).toContainEqual({ string: 'E', fret: 12 });
+		expect(em.notes).toContainEqual({ string: 'E', fret: 15 });
+	});
 });
 
 describe('getScale', () => {

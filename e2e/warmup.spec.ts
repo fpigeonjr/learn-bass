@@ -29,9 +29,9 @@ test.describe('warm-up play-along chart', () => {
 		// Speed up the count-in: 120 bpm → 0.5s/beat → 2s lead-in.
 		await page.selectOption('#gh-tempo', '120');
 
-		// Wait for the count-in to finish (notes only spawn once `running` is true).
+		// Count-in + full runway before first note hits (120bpm = 4s).
 		await expect
-			.poll(async () => page.locator('.gh-note').count(), { timeout: 6_000 })
+			.poll(async () => page.locator('.gh-note').count(), { timeout: 10_000 })
 			.toBeGreaterThan(0);
 
 		// Each note carries an absolute strike time; as "now" advances, its
@@ -67,9 +67,9 @@ test.describe('warm-up play-along chart', () => {
 		await start.click();
 		await expect(start).toHaveText('Stop');
 
-		// Wait for notes to appear before stopping.
+		// Count-in + runway (120bpm = 4s) before notes appear.
 		await expect
-			.poll(async () => page.locator('.gh-note').count(), { timeout: 6_000 })
+			.poll(async () => page.locator('.gh-note').count(), { timeout: 10_000 })
 			.toBeGreaterThan(0);
 
 		await start.click();
@@ -82,9 +82,9 @@ test.describe('warm-up play-along chart', () => {
 		await page.selectOption('#gh-tempo', '60'); // 1s/beat → slow, easy to observe
 		await page.click('#gh-start');
 
-		// Wait for the count-in (4 beats = 4s) to finish and notes to appear.
+		// Count-in + runway at 60bpm = 8s before notes appear.
 		await expect
-			.poll(async () => page.locator('.gh-note').count(), { timeout: 8_000 })
+			.poll(async () => page.locator('.gh-note').count(), { timeout: 12_000 })
 			.toBeGreaterThan(0);
 
 		// Every visible note carries a fret label and a lane (string).
@@ -108,7 +108,7 @@ test.describe('warm-up play-along chart', () => {
 		await page.click('#gh-start');
 
 		await expect
-			.poll(async () => page.locator('.gh-note').count(), { timeout: 8_000 })
+			.poll(async () => page.locator('.gh-note').count(), { timeout: 12_000 })
 			.toBeGreaterThan(0);
 
 		const frets = await page.locator('.gh-fret').allTextContents();

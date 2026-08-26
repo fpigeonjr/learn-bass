@@ -113,7 +113,7 @@ test.describe('scales play-along chart', () => {
 		await page.click('#gh-start');
 
 		await expect
-			.poll(async () => page.locator('.gh-note').count(), { timeout: 8_000 })
+			.poll(async () => page.locator('.gh-note').count(), { timeout: 12_000 })
 			.toBeGreaterThanOrEqual(4);
 
 		// Read notes sorted by spawn order (data-beat), then check they form a
@@ -141,7 +141,7 @@ test.describe('scales play-along chart', () => {
 		await page.click('#gh-start');
 
 		await expect
-			.poll(async () => page.locator('.gh-note').count(), { timeout: 8_000 })
+			.poll(async () => page.locator('.gh-note').count(), { timeout: 12_000 })
 			.toBeGreaterThanOrEqual(4);
 
 		const visible = await page.locator('.gh-note').evaluateAll((els) =>
@@ -172,7 +172,7 @@ test.describe('scales play-along chart', () => {
 			await page.click('#gh-start');
 
 			await expect
-				.poll(async () => page.locator('.gh-note').count(), { timeout: 8_000 })
+				.poll(async () => page.locator('.gh-note').count(), { timeout: 12_000 })
 				.toBeGreaterThanOrEqual(3);
 
 			const visible = await visibleNotes(page);

@@ -230,7 +230,10 @@ const { heading = 'Pattern', tracks = [] } = Astro.props;
 			beatIdx = 0;
 			nextBeatTime = audioCtx.currentTime + 0.15;
 			noteBeat = 0;
-			nextNoteTime = nextBeatTime;
+			// Offset notes by a full runway so the first note starts at the top,
+			// not already at the strike line. "Hard to get started when you're
+			// already losing."
+			nextNoteTime = nextBeatTime + lookahead * beatDur;
 			rafId = requestAnimationFrame(tick);
 		});
 	}

@@ -1,5 +1,5 @@
 ---
-import { songs, nextSong } from '../data/songs';
+import { songs } from '../data/songs';
 
 // Expose server data to the client script (avoids re-parsing / duplication).
 const initialSongs = songs;
@@ -33,12 +33,27 @@ const statusOrder = ['cold', 'dusty', 'warm', 'green'] as const;
 	</ul>
 </section>
 
-<script define:vars={{ initialSongs, nextSong, BASE: import.meta.env.BASE_URL }}>
+<script define:vars={{ initialSongs, BASE: import.meta.env.BASE_URL }}>
+	// Plain JavaScript only — Astro <script> blocks do not strip TypeScript.
 	const SONGS = initialSongs;
 	const BASE_URL = BASE;
 
 	const KEY = 'learn-bass:status:v1';
-	const STATUSES = ['cold', 'dusty', 'warm', 'green'];
+
+	// nextSong logic inlined (functions can't cross define:vars serialization).
+	const TIER_RANK = { cold: 0, dusty: 1, warm: 2, green: 99 };
+	function nextSong(active) {
+		const open = active.filter((s) => s.status !== 'green');
+		if (open.length === 0) return null;
+		open.sort((a, b) => {
+			if (TIER_RANK[a.status] !== TIER_RANK[b.status]) {
+				return TIER_RANK[a.status] - TIER_RANK[b.status];
+			}
+			if (a.tier !== b.tier) return a.tier === 'backup' ? 1 : -1;
+			return a.targetWeek - b.targetWeek;
+		});
+		return open[0];
+	}
 
 	function load() {
 		try {
@@ -48,16 +63,16 @@ const statusOrder = ['cold', 'dusty', 'warm', 'green'] as const;
 		}
 	}
 
-	function save(state: Record<string, string>) {
+	function save(state) {
 		localStorage.setItem(KEY, JSON.stringify(state));
 	}
 
 	function applyStatuses() {
 		const saved = load();
-		document.querySelectorAll<HTMLElement>('[data-slug]').forEach((li) => {
-			const slug = li.dataset.slug!;
-			const status = saved[slug] || li.querySelector<HTMLElement>('.status')?.dataset.status || 'cold';
-			li.querySelector<HTMLElement>('.status')!.dataset.status = status;
+		document.querySelectorAll('[data-slug]').forEach((li) => {
+			const slug = li.dataset.slug;
+			const status = saved[slug] || li.querySelector('.status')?.dataset.status || 'cold';
+			li.querySelector('.status').dataset.status = status;
 			li.querySelectorAll('button').forEach((b) => {
 				b.classList.toggle('active', b.dataset.set === status);
 			});
@@ -88,20 +103,20 @@ const statusOrder = ['cold', 'dusty', 'warm', 'green'] as const;
 		const counts = { cold: 0, dusty: 0, warm: 0, green: 0 };
 		SONGS.forEach((s) => {
 			const st = state[s.slug] || s.status;
-			counts[st as keyof typeof counts]++;
+			counts[st] = (counts[st] || 0) + 1;
 		});
 		Object.entries(counts).forEach(([k, v]) => {
-			const el = document.getElementById(`count-${k}`);
+			const el = document.getElementById('count-' + k);
 			if (el) el.textContent = String(v);
 		});
 	}
 
-	document.querySelectorAll<HTMLElement>('.status').forEach((group) => {
+	document.querySelectorAll('.status').forEach((group) => {
 		group.addEventListener('click', (e) => {
-			const btn = (e.target as HTMLElement).closest('button');
+			const btn = e.target.closest('button');
 			if (!btn) return;
-			const slug = group.closest('[data-slug]')!.dataset.slug!;
-			const status = btn.dataset.set!;
+			const slug = group.closest('[data-slug]').dataset.slug;
+			const status = btn.dataset.set;
 			const state = load();
 			state[slug] = status;
 			save(state);

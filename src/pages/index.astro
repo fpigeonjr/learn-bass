@@ -37,15 +37,15 @@ const initialDays = Math.max(0, Math.ceil((new Date('2026-10-09T00:00:00-05:00')
 	const WARMUP_KEY = 'learn-bass:warmup:v1';
 	function initWarmup() {
 		const saved = JSON.parse(localStorage.getItem(WARMUP_KEY) || '{}');
-		document.querySelectorAll<HTMLInputElement>('.checklist input').forEach((cb) => {
-			cb.checked = !!saved[cb.dataset.k!];
+		document.querySelectorAll('.checklist input').forEach((cb) => {
+			cb.checked = !!saved[cb.dataset.k];
 		});
 	}
 	function listenWarmup() {
-		document.querySelectorAll<HTMLInputElement>('.checklist input').forEach((cb) => {
+		document.querySelectorAll('.checklist input').forEach((cb) => {
 			cb.addEventListener('change', () => {
 				const saved = JSON.parse(localStorage.getItem(WARMUP_KEY) || '{}');
-				saved[cb.dataset.k!] = cb.checked;
+				saved[cb.dataset.k] = cb.checked;
 				localStorage.setItem(WARMUP_KEY, JSON.stringify(saved));
 			});
 		});

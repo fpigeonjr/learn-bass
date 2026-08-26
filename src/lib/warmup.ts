@@ -19,6 +19,7 @@ export type ExerciseId = 'alternation' | 'crossing' | 'spider' | 'roots';
 export interface Note {
 	string: StringId;
 	fret: number; // 0 = open string, 1-4 = fretted (spider)
+	boxStart?: boolean; // first note of a new box/position up the neck
 }
 
 export type Slot = Note | null;

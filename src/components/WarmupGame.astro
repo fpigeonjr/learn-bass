@@ -11,7 +11,7 @@ import type { StringId } from '../lib/warmup';
 
 interface Props {
 	heading?: string;
-	tracks: { id: string; label: string; notes: ({ string: StringId; fret: number } | null)[] }[];
+	tracks: { id: string; label: string; notes: ({ string: StringId; fret: number; boxStart?: boolean } | null)[] }[];
 }
 
 const { heading = 'Pattern', tracks = [] } = Astro.props;
@@ -123,19 +123,11 @@ const { heading = 'Pattern', tracks = [] } = Astro.props;
 		const lane = lanesEl.querySelector('[data-string="' + note.string + '"]');
 
 		const el = document.createElement('div');
-		// Only the first note of the high box (12+) gets the flash — not every high note.
-		const isHigh = note.fret >= 12;
-		let isBoxStart = false;
-		if (isHigh) {
-				const len = track.notes.length;
-				const prev = track.notes[(beat - 1 + len) % len];
-				isBoxStart = !prev || prev.fret < 12;
-			}
-			el.className = 'gh-note' + (isBoxStart ? ' gh-note--box-start' : '');
-			el.style.setProperty('--c', STRING_COLORS[note.string]);
-			el.dataset.time = String(time); // absolute audio-context strike time
-			el.dataset.beat = String(beat); // absolute beat index (for test identity)
-			if (isHigh) el.dataset.box = '2';
+		el.className = 'gh-note' + (note.boxStart ? ' gh-note--box-start' : '');
+		el.style.setProperty('--c', STRING_COLORS[note.string]);
+		el.dataset.time = String(time); // absolute audio-context strike time
+		el.dataset.beat = String(beat); // absolute beat index (for test identity)
+		if (note.boxStart) el.dataset.box = '2';
 
 		// Fret number on the block (0 = open string).
 		const fret = document.createElement('span');

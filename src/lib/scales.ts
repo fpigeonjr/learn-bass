@@ -25,15 +25,18 @@ function ascendDescend(ascending: Slot[]): Slot[] {
 	return [...ascending, ...down.slice(1)];
 }
 
-// Single exercise up the fretboard: low position → high position (+12)
-// then back down, so you climb the neck in one chart.
-function upTheBoard(ascending: Slot[]): Slot[] {
-	const low = ascending;
-	const high = shift(ascending, 12);
-	// Ascend low, ascend high, then descend high, descend low (one continuous run).
-	const up = [...low, ...high];
-	const down = [...high].reverse().slice(1).concat([...low].reverse());
-	return [...up, ...down];
+// Single exercise that climbs chromatically: same scale pattern starting
+// on E, then F, F#, G, etc. — so you walk up the fretboard. Each
+// position's first note is marked boxStart for the flash indicator.
+function chromaticClimb(ascending: Slot[], semitones = 7): Slot[] {
+	const out: Slot[] = [];
+	for (let off = 0; off < semitones; off++) {
+		const shifted = shift(ascending, off);
+		// Mark the first note of each new position (except the very first)
+		if (off > 0 && shifted[0]) (shifted[0] as any).boxStart = true;
+		out.push(...shifted);
+	}
+	return out;
 }
 
 // E minor pentatonic: E G A B D (up to octave E, then G).
@@ -87,22 +90,22 @@ export const SCALES: ScaleDef[] = [
 	{
 		id: 'em-pentatonic',
 		label: 'E minor pentatonic',
-		notes: upTheBoard(emPentatonicAscending),
+		notes: chromaticClimb(emPentatonicAscending, 7),
 	},
 	{
 		id: 'em-blues',
 		label: 'Blues (E)',
-		notes: upTheBoard(emBluesAscending),
+		notes: chromaticClimb(emBluesAscending, 7),
 	},
 	{
 		id: 'g-major',
 		label: 'G major',
-		notes: upTheBoard(gMajorAscending),
+		notes: chromaticClimb(gMajorAscending, 7),
 	},
 	{
 		id: 'a-minor',
 		label: 'A minor',
-		notes: upTheBoard(aMinorAscending),
+		notes: chromaticClimb(aMinorAscending, 7),
 	},
 ];
 

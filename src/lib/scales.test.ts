@@ -23,14 +23,12 @@ describe('SCALES', () => {
 		}
 	});
 
-	it('each scale starts and ends on its root', () => {
+	it('each scale starts on its root', () => {
 		for (const scale of SCALES) {
 			const first = scale.notes[0];
-			const last = scale.notes[scale.notes.length - 1];
 			expect(isRest(first)).toBe(false);
-			expect(isRest(last)).toBe(false);
-			expect(first!.string).toBe(last!.string);
-			expect(first!.fret).toBe(last!.fret);
+			// First note should be the low root (fret 0-3)
+			expect(first!.fret).toBeLessThan(5);
 		}
 	});
 
@@ -82,15 +80,18 @@ describe('SCALES', () => {
 		]);
 	});
 
-	it('scales climb the fretboard (high position frets 12+)', () => {
+	it('scales climb chromatically (E -> F -> F# ...)', () => {
 		for (const scale of SCALES) {
-			const hasHigh = scale.notes.some((s) => s && s.fret >= 12);
+			const hasHigh = scale.notes.some((s) => s && s.fret >= 6);
 			expect(hasHigh, `${scale.id} should have notes up the board`).toBe(true);
 		}
-		// E minor pentatonic low E0 appears again as E12 up the board
+		// E minor pentatonic E0 appears again as F (1), F# (2), G (3) up the board
 		const em = getScale('em-pentatonic');
-		expect(em.notes).toContainEqual({ string: 'E', fret: 12 });
-		expect(em.notes).toContainEqual({ string: 'E', fret: 15 });
+		expect(em.notes).toContainEqual(expect.objectContaining({ string: 'E', fret: 1 }));
+		expect(em.notes).toContainEqual(expect.objectContaining({ string: 'E', fret: 2 }));
+		// First note of each chromatic position is marked boxStart
+		const boxStarts = em.notes.filter((s) => s && (s as any).boxStart);
+		expect(boxStarts.length).toBeGreaterThan(0);
 	});
 });
 

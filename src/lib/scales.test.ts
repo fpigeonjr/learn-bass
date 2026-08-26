@@ -34,8 +34,8 @@ describe('SCALES', () => {
 
 	it('E minor pentatonic spells E G A B D (ascending)', () => {
 		const em = getScale('em-pentatonic');
-		// Ascending portion = first 7 notes (up to octave E).
-		const ascending = em.notes.slice(0, 7);
+		// Ascending portion = first 6 notes (E up to octave E).
+		const ascending = em.notes.slice(0, 6);
 		expect(ascending).toEqual([
 			{ string: 'E', fret: 0 }, // E
 			{ string: 'E', fret: 3 }, // G
@@ -43,7 +43,6 @@ describe('SCALES', () => {
 			{ string: 'A', fret: 2 }, // B
 			{ string: 'D', fret: 0 }, // D
 			{ string: 'D', fret: 2 }, // E (octave)
-			{ string: 'E', fret: 3 }, // G
 		]);
 	});
 

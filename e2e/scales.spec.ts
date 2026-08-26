@@ -9,8 +9,6 @@ const E_MINOR_PENTATONIC = [
 	{ string: 'A', fret: '2' }, // B
 	{ string: 'D', fret: '0' }, // D
 	{ string: 'D', fret: '2' }, // E (octave)
-	{ string: 'E', fret: '3' }, // G
-	{ string: 'D', fret: '2' }, // E
 	{ string: 'D', fret: '0' }, // D
 	{ string: 'A', fret: '2' }, // B
 	{ string: 'A', fret: '0' }, // A
@@ -43,8 +41,6 @@ const E_BLUES = [
 	{ string: 'A', fret: '2' }, // B
 	{ string: 'D', fret: '0' }, // D
 	{ string: 'D', fret: '2' }, // E (octave)
-	{ string: 'E', fret: '3' }, // G
-	{ string: 'D', fret: '2' }, // E
 	{ string: 'D', fret: '0' }, // D
 	{ string: 'A', fret: '2' }, // B
 	{ string: 'A', fret: '1' }, // B♭

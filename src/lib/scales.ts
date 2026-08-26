@@ -40,7 +40,7 @@ function chromaticClimb(ascending: Slot[], semitones = 7): Slot[] {
 	return out;
 }
 
-// E minor pentatonic: E G A B D (up to octave E, then G).
+// E minor pentatonic: E G A B D (up to octave E).
 const emPentatonicAscending: Slot[] = [
 	n('E', 0), // E
 	n('E', 3), // G
@@ -48,7 +48,6 @@ const emPentatonicAscending: Slot[] = [
 	n('A', 2), // B
 	n('D', 0), // D
 	n('D', 2), // E (octave)
-	n('E', 3), // G
 ];
 
 // E blues: E G A B♭ B D (adds the flat 5 between A and B).
@@ -60,7 +59,6 @@ const emBluesAscending: Slot[] = [
 	n('A', 2), // B
 	n('D', 0), // D
 	n('D', 2), // E (octave)
-	n('E', 3), // G
 ];
 
 // G major: G A B C D E F♯ G.

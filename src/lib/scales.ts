@@ -32,9 +32,10 @@ function chromaticClimb(ascending: Slot[], semitones = 7): Slot[] {
 	const out: Slot[] = [];
 	for (let off = 0; off < semitones; off++) {
 		const shifted = shift(ascending, off);
+		const run = ascendDescend(shifted);
 		// Mark the first note of each new position (except the very first)
-		if (off > 0 && shifted[0]) (shifted[0] as any).boxStart = true;
-		out.push(...shifted);
+		if (off > 0 && run[0]) (run[0] as any).boxStart = true;
+		out.push(...run);
 	}
 	return out;
 }

@@ -67,12 +67,22 @@ const initialDays = Math.max(0, Math.ceil((new Date('2026-10-09T00:00:00-05:00')
 		roots, groove, and the hooks people recognize. No charts, no panic.
 	</p>
 
-	<div class="stat-grid">
-		<div class="stat stat--hero"><div class="num" id="countdown">{initialDays} <small>days</small></div><div class="lbl">until the gig — Oct 9 · Canyon Lake</div><div class="bar" aria-hidden="true"><i id="countdown-bar"></i></div></div>
-		<div class="stat stat--mini"><div class="num" id="count-green">{greenCount}</div><div class="lbl">green</div></div>
-		<div class="stat stat--mini"><div class="num" id="count-warm">{warmCount}</div><div class="lbl">warm</div></div>
-		<div class="stat stat--mini"><div class="num" id="count-dusty">{dustyCount}</div><div class="lbl">dusty</div></div>
-		<div class="stat stat--mini"><div class="num" id="count-cold">{coldCount}</div><div class="lbl">cold</div></div>
+	<div class="stat-deck">
+		<div class="stat-card stat-card--hero">
+			<div class="stat-card-head"><span class="fret-dot yellow"></span> Countdown</div>
+			<div class="num" id="countdown">{initialDays} <small>days</small></div>
+			<div class="lbl">until the gig — Oct 9 · Canyon Lake</div>
+			<div class="bar" aria-hidden="true"><i id="countdown-bar"></i></div>
+		</div>
+		<div class="stat-card stat-card--group">
+			<div class="stat-card-head">Setlist status <span class="muted" style="font-family:Space Grotesk,sans-serif;font-size:0.6rem;letter-spacing:0.08em;text-transform:none;">— tap a song to update</span></div>
+			<div class="stat-minis">
+				<div class="stat-mini"><i class="fret-dot green"></i><div class="num" id="count-green">{greenCount}</div><div class="lbl">green</div><div class="sub">gig-ready</div></div>
+				<div class="stat-mini"><i class="fret-dot orange"></i><div class="num" id="count-warm">{warmCount}</div><div class="lbl">warm</div><div class="sub">needs reps</div></div>
+				<div class="stat-mini"><i class="fret-dot yellow"></i><div class="num" id="count-dusty">{dustyCount}</div><div class="lbl">dusty</div><div class="sub">rusty</div></div>
+				<div class="stat-mini"><i class="fret-dot blue"></i><div class="num" id="count-cold">{coldCount}</div><div class="lbl">cold</div><div class="sub">not started</div></div>
+			</div>
+		</div>
 	</div>
 
 	<div class="card next-card" id="what-now">

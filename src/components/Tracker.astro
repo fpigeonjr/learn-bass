@@ -109,6 +109,15 @@ const statusOrder = ['cold', 'dusty', 'warm', 'green'] as const;
 			const el = document.getElementById('count-' + k);
 			if (el) el.textContent = String(v);
 		});
+		// Gig-ready progress meter.
+		const total = SONGS.length || 1;
+		const pct = Math.round((counts.green / total) * 100);
+		const fill = document.getElementById('gig-ready-fill');
+		const lbl = document.getElementById('gig-ready-pct');
+		if (fill) fill.style.width = pct + '%';
+		if (lbl) lbl.textContent = pct + '%';
+		// Re-apply any active status filter so rows stay in sync after updates.
+		if (typeof window.__applyStatFilter === 'function') window.__applyStatFilter();
 	}
 
 	document.querySelectorAll('.status').forEach((group) => {

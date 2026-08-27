@@ -8,6 +8,7 @@ const warmCount = songs.filter((s) => s.status === 'warm').length;
 const dustyCount = songs.filter((s) => s.status === 'dusty').length;
 const coldCount = songs.filter((s) => s.status === 'cold').length;
 const initialDays = Math.max(0, Math.ceil((new Date('2026-10-09T00:00:00-05:00').getTime() - Date.now()) / 86400000));
+const gigReadyPct = Math.round((greenCount / songs.length) * 100);
 ---
 
 <Layout title="Dashboard">
@@ -17,7 +18,7 @@ const initialDays = Math.max(0, Math.ceil((new Date('2026-10-09T00:00:00-05:00')
 	function tick() {
 		const el = document.getElementById('countdown');
 		const bar = document.getElementById('countdown-bar');
-		if (!el) return;
+		const pctEl = document.getElementById('countdown-pct');
 		const now = new Date();
 		const target = new Date(GIG);
 		now.setHours(0, 0, 0, 0);
@@ -31,6 +32,11 @@ const initialDays = Math.max(0, Math.ceil((new Date('2026-10-09T00:00:00-05:00')
 			const total = 49; // ~7 weeks
 			const pct = Math.max(4, Math.min(100, ((total - Math.max(0,d)) / total) * 100));
 			bar.style.width = pct + '%';
+		}
+		if (pctEl) {
+			const total = 49;
+			const burned = Math.max(0, Math.min(100, Math.round(((total - Math.max(0,d)) / total) * 100)));
+			pctEl.textContent = burned + '%';
 		}
 	}
 	function init() {
@@ -58,6 +64,36 @@ const initialDays = Math.max(0, Math.ceil((new Date('2026-10-09T00:00:00-05:00')
 	}
 	initWarmup();
 	listenWarmup();
+
+	// Setlist status filter chips — click to filter the board.
+	// The Tracker island owns board state; we surface filtering via URL hash
+	// so it survives reloads and doesn't couple the two islands tightly.
+	let activeFilter = null;
+	function applyFilter() {
+		const chips = document.querySelectorAll('.stat-mini[data-filter]');
+		const rows = document.querySelectorAll('.board li');
+		chips.forEach((chip) => {
+			const on = chip.dataset.filter === activeFilter;
+			chip.classList.toggle('is-active', on);
+			chip.setAttribute('aria-pressed', String(on));
+		});
+		rows.forEach((row) => {
+			const status = row.querySelector('.status')?.dataset.status;
+			row.hidden = activeFilter && activeFilter !== 'all' ? status !== activeFilter : false;
+		});
+		const board = document.getElementById('tracker');
+		if (board) board.setAttribute('data-filter', activeFilter || 'all');
+	}
+	window.__applyStatFilter = applyFilter;
+	document.querySelectorAll('.stat-mini[data-filter]').forEach((chip) => {
+		chip.addEventListener('click', () => {
+			activeFilter = activeFilter === chip.dataset.filter ? null : chip.dataset.filter;
+			applyFilter();
+		});
+	});
+	const hash = (location.hash || '').replace('#', '');
+	if (hash.startsWith('status=')) activeFilter = hash.slice(7);
+	applyFilter();
 </script>
 
 <main class="wrap">
@@ -72,16 +108,19 @@ const initialDays = Math.max(0, Math.ceil((new Date('2026-10-09T00:00:00-05:00')
 			<div class="stat-card-head"><span class="fret-dot yellow"></span> Countdown</div>
 			<div class="num" id="countdown">{initialDays} <small>days</small></div>
 			<div class="lbl">until the gig — Oct 9 · Canyon Lake</div>
-			<div class="bar" aria-hidden="true"><i id="countdown-bar"></i></div>
+			<div class="bar" aria-hidden="true"><i id="countdown-bar"></i><span class="bar-notch" style="left:33.3%"></span><span class="bar-notch" style="left:66.6%"></span></div>
+			<div class="countdown-sub"><span id="countdown-pct">0%</span> of the runway burned</div>
 		</div>
 		<div class="stat-card stat-card--group">
-			<div class="stat-card-head">Setlist status <span class="muted" style="font-family:Space Grotesk,sans-serif;font-size:0.6rem;letter-spacing:0.08em;text-transform:none;">— tap a song to update</span></div>
+			<div class="stat-card-head">Setlist status <span class="stat-hint">— click a chip to filter</span></div>
 			<div class="stat-minis">
-				<div class="stat-mini"><i class="fret-dot green"></i><div class="num" id="count-green">{greenCount}</div><div class="lbl">green</div><div class="sub">gig-ready</div></div>
-				<div class="stat-mini"><i class="fret-dot orange"></i><div class="num" id="count-warm">{warmCount}</div><div class="lbl">warm</div><div class="sub">needs reps</div></div>
-				<div class="stat-mini"><i class="fret-dot yellow"></i><div class="num" id="count-dusty">{dustyCount}</div><div class="lbl">dusty</div><div class="sub">rusty</div></div>
-				<div class="stat-mini"><i class="fret-dot blue"></i><div class="num" id="count-cold">{coldCount}</div><div class="lbl">cold</div><div class="sub">not started</div></div>
+				<button class="stat-mini" data-filter="green" type="button"><i class="fret-dot green"></i><div class="num" id="count-green">{greenCount}</div><div class="lbl">green</div><div class="sub">gig-ready</div></button>
+				<button class="stat-mini" data-filter="warm" type="button"><i class="fret-dot orange"></i><div class="num" id="count-warm">{warmCount}</div><div class="lbl">warm</div><div class="sub">needs reps</div></button>
+				<button class="stat-mini" data-filter="dusty" type="button"><i class="fret-dot yellow"></i><div class="num" id="count-dusty">{dustyCount}</div><div class="lbl">dusty</div><div class="sub">rusty</div></button>
+				<button class="stat-mini" data-filter="cold" type="button"><i class="fret-dot blue"></i><div class="num" id="count-cold">{coldCount}</div><div class="lbl">cold</div><div class="sub">not started</div></button>
 			</div>
+			<div class="stat-progress" aria-hidden="true"><span class="stat-progress-fill" id="gig-ready-fill" style={`width:${gigReadyPct}%`}></span></div>
+			<div class="stat-progress-lbl"><span id="gig-ready-pct">{gigReadyPct}%</span> of the set is gig-ready</div>
 		</div>
 	</div>
 

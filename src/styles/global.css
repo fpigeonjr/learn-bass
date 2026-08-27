@@ -215,6 +215,8 @@ h2 { font-family: 'Bungee', sans-serif; font-weight: 400; font-size: 1.15rem; le
 
 .pill { display:inline-block; font-size:0.72rem; padding:0.3rem 0.7rem; border-radius:999px; border:1px solid #333; color:var(--ink); font-weight:700; }
 
+.btn-start{ display:inline-block; font-family:'Bungee',sans-serif; font-size:1rem; letter-spacing:0.04em; text-transform:uppercase; color:#0a120c; background: linear-gradient(180deg, #3ee08a 0%, var(--gh-green) 100%); border:2px solid rgba(255,255,255,0.35); border-radius:999px; padding:0.7rem 1.6rem; text-decoration:none; box-shadow: 0 0 18px rgba(46,184,114,0.55), 0 4px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.4); transition: transform 0.12s, box-shadow 0.12s; }
+.btn-start:hover{ transform: translateY(-1px) scale(1.02); box-shadow: 0 0 24px rgba(46,184,114,0.7), 0 6px 18px rgba(0,0,0,0.55); }
 .checklist{ list-style:none; padding:0; margin:0; }
 .checklist li{ display:flex; align-items:flex-start; gap:0.6rem; padding:0.6rem 0; border-bottom:1px solid #24202a; }
 .checklist li:last-child{ border-bottom:none; }

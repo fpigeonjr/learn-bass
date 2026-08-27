@@ -282,18 +282,26 @@ const { heading = 'Pattern', tracks = [] } = Astro.props;
 		font-size: 0.95rem;
 	}
 	.gh-start {
-		background: var(--accent-2);
-		color: #0a120c;
-		border: none;
-		border-radius: 8px;
-		padding: 0.6rem 1.4rem;
-		font-size: 1rem;
-		font-weight: 700;
+		font-family: 'Bungee', sans-serif;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		background: linear-gradient(180deg, #3ee08a 0%, #1db86a 100%);
+		color: #07120a;
+		border: 2px solid rgba(255,255,255,0.45);
+		border-radius: 999px;
+		padding: 0.7rem 1.8rem;
+		font-size: 1.05rem;
+		font-weight: 400;
 		cursor: pointer;
+		box-shadow: 0 0 18px rgba(46,184,114,0.55), 0 4px 14px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.5);
 	}
+	.gh-start:hover { transform: translateY(-1px); box-shadow: 0 0 24px rgba(46,184,114,0.7), 0 6px 18px rgba(0,0,0,0.5); }
 	.gh-start.running {
-		background: var(--red);
-		color: #160a0a;
+		background: linear-gradient(180deg, #ff4d5e 0%, #e00a20 100%);
+		color: #fff;
+		border-color: rgba(255,255,255,0.55);
+		box-shadow: 0 0 18px rgba(255,26,46,0.65), 0 4px 14px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.4);
+		text-shadow: 0 1px 2px rgba(0,0,0,0.4);
 	}
 
 	.gh-stage {

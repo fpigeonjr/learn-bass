@@ -51,4 +51,11 @@ test.describe('dashboard', () => {
 	test('"what now" pointer is populated', async ({ page }) => {
 		await expect(page.locator('#what-now .title')).not.toBeEmpty();
 	});
+
+	test('Start Practice CTA is visible and links to warmups', async ({ page }) => {
+		const cta = page.locator('a.btn-start');
+		await expect(cta).toBeVisible();
+		await expect(cta).toHaveAttribute('href', /^\/learn-bass\/reference\/warmups\//);
+		await expect(cta).toHaveText(/Start Practice/i);
+	});
 });

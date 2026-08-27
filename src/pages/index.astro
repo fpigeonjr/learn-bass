@@ -16,16 +16,22 @@ const initialDays = Math.max(0, Math.ceil((new Date('2026-10-09T00:00:00-05:00')
 	const GIG = '2026-10-09T00:00:00-05:00';
 	function tick() {
 		const el = document.getElementById('countdown');
+		const bar = document.getElementById('countdown-bar');
 		if (!el) return;
 		const now = new Date();
 		const target = new Date(GIG);
 		now.setHours(0, 0, 0, 0);
 		target.setHours(0, 0, 0, 0);
 		const d = Math.ceil((target.getTime() - now.getTime()) / 86400000);
-		if (d < 0) el.textContent = 'Gig done';
-		else if (d === 0) el.textContent = "Tonight's the gig 🎸";
-		else if (d === 1 || d === 2) el.textContent = 'Rest day — no practice';
-		else el.textContent = `${d} days to the gig`;
+		if (d < 0) el.innerHTML = 'Gig done';
+		else if (d === 0) el.innerHTML = "Tonight's the gig 🎸";
+		else if (d === 1 || d === 2) el.innerHTML = 'Rest day — no practice';
+		else el.innerHTML = `${d} <small>days</small>`;
+		if (bar) {
+			const total = 49; // ~7 weeks
+			const pct = Math.max(4, Math.min(100, ((total - Math.max(0,d)) / total) * 100));
+			bar.style.width = pct + '%';
+		}
 	}
 	function init() {
 		tick();
@@ -62,11 +68,11 @@ const initialDays = Math.max(0, Math.ceil((new Date('2026-10-09T00:00:00-05:00')
 	</p>
 
 	<div class="stat-grid">
-		<div class="stat"><div class="num" id="countdown">{initialDays} days</div><div class="lbl">until the gig</div></div>
-		<div class="stat"><div class="num" id="count-green">{greenCount}</div><div class="lbl">green</div></div>
-		<div class="stat"><div class="num" id="count-warm">{warmCount}</div><div class="lbl">warm</div></div>
-		<div class="stat"><div class="num" id="count-dusty">{dustyCount}</div><div class="lbl">dusty</div></div>
-		<div class="stat"><div class="num" id="count-cold">{coldCount}</div><div class="lbl">cold</div></div>
+		<div class="stat stat--hero"><div class="num" id="countdown">{initialDays} <small>days</small></div><div class="lbl">until the gig — Oct 9 · Canyon Lake</div><div class="bar" aria-hidden="true"><i id="countdown-bar"></i></div></div>
+		<div class="stat stat--mini"><div class="num" id="count-green">{greenCount}</div><div class="lbl">green</div></div>
+		<div class="stat stat--mini"><div class="num" id="count-warm">{warmCount}</div><div class="lbl">warm</div></div>
+		<div class="stat stat--mini"><div class="num" id="count-dusty">{dustyCount}</div><div class="lbl">dusty</div></div>
+		<div class="stat stat--mini"><div class="num" id="count-cold">{coldCount}</div><div class="lbl">cold</div></div>
 	</div>
 
 	<div class="card next-card" id="what-now">

@@ -95,9 +95,20 @@ export function secondsPerBeat(bpm: number): number {
 	return 60 / bpm;
 }
 
+// Geometry shared with WarmupGame.astro's scoped CSS. If you change these,
+// change the CSS to match.
+export const STRIKE_LINE_BOTTOM_PX = 56; // .gh-strike `bottom` offset
+export const STRIKE_LINE_HEIGHT_PX = 2; // .gh-strike height
+export const RUNWAY_TOP_PX = 40; // notes spawn this far below the stage top
+
+// y-pixel of the strike line's *center* within the stage.
+export function strikeLineY(stageHeight: number): number {
+	return stageHeight - STRIKE_LINE_BOTTOM_PX - STRIKE_LINE_HEIGHT_PX / 2;
+}
+
 export interface NoteLayout {
 	dt: number; // seconds until strike; negative = already passed
-	y: number; // pixel offset of the note's top edge (relative to lane top)
+	y: number; // pixel offset of the note's *top edge* (relative to lane top)
 	opacity: number;
 	expired: boolean;
 }
@@ -112,12 +123,15 @@ export function layOutNote(opts: {
 	runwayPx: number;
 	lookaheadBeats: number;
 	bpm: number;
+	noteHeight: number; // rendered pixel height of the note block
 }): NoteLayout {
-	const { strikeTime, now, strikeY, runwayPx, lookaheadBeats, bpm } = opts;
+	const { strikeTime, now, strikeY, runwayPx, lookaheadBeats, bpm, noteHeight } = opts;
 	const dt = strikeTime - now;
 	const beatDur = secondsPerBeat(bpm);
 	const pxPerSec = runwayPx / (lookaheadBeats * beatDur);
-	const y = strikeY - dt * pxPerSec;
+	// Center the note block on the strike line exactly when the click sounds,
+	// so what the eye sees crossing the line matches the metronome.
+	const y = strikeY - dt * pxPerSec - noteHeight / 2;
 	return {
 		dt,
 		y,

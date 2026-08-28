@@ -6,7 +6,7 @@
 //
 // Props: a list of tracks (each = a note sequence to loop) and a heading
 // to label the track picker. Shared by warm-ups and scales.
-import { STRING_COLORS, STRINGS } from '../lib/warmup';
+import { RUNWAY_TOP_PX, STRING_COLORS, STRIKE_LINE_BOTTOM_PX, strikeLineY } from '../lib/warmup';
 import type { StringId } from '../lib/warmup';
 
 interface Props {
@@ -51,29 +51,42 @@ const { heading = 'Pattern', tracks = [] } = Astro.props;
 		<div class="gh-strike"></div>
 		<div class="gh-count" id="gh-count" hidden></div>
 	</div>
+	<script type="application/json" id="gh-tracks" set:html={JSON.stringify(tracks)} />
 </section>
 
-<script define:vars={{ STRING_COLORS, STRINGS, tracks }}>
-	// Plain JavaScript only — Astro <script> blocks do not strip TypeScript.
-	// Data (STRING_COLORS, STRINGS, tracks) is passed in from the frontmatter.
+<script>
+	// Bundled module script — imports the tested timing logic from the lib so
+	// there is a single source of truth for note positioning.
+	import { RUNWAY_TOP_PX, STRING_COLORS, STRIKE_LINE_BOTTOM_PX, layOutNote, strikeLineY } from '../lib/warmup';
+	import type { Slot } from '../lib/warmup';
 
-	// note on a given beat (loops over the selected track's notes).
-	function noteAtBeat(track, beat) {
+	interface Track {
+		id: string;
+		label: string;
+		notes: Slot[];
+	}
+
+	// Tracks are serialized into a JSON island above (module scripts can't
+	// receive define:vars). "note on a given beat" — loops over the track.
+	function noteAtBeat(track: Track, beat: number): Slot {
 		return track.notes[beat % track.notes.length];
 	}
 
-	const stage = document.getElementById('gh-stage');
-	const lanesEl = stage.querySelector('.gh-lanes');
-	const countEl = document.getElementById('gh-count');
-	const startBtn = document.getElementById('gh-start');
-	const exSel = document.getElementById('gh-exercise');
-	const tempoSel = document.getElementById('gh-tempo');
+	const stage = document.getElementById('gh-stage')!;
+	const tracks: Track[] = JSON.parse(document.getElementById('gh-tracks')!.textContent || '[]');
+	const lanesEl = stage.querySelector('.gh-lanes')!;
+	const countEl = document.getElementById('gh-count')!;
+	const startBtn = document.getElementById('gh-start')!;
+	const exSel = document.getElementById('gh-exercise') as HTMLSelectElement;
+	const tempoSel = document.getElementById('gh-tempo') as HTMLSelectElement;
 
 	// --- Track geometry ---
 	let strikeY = 0; // pixels from top of lanes where the strike line sits
 
 	function measure() {
-		strikeY = stage.clientHeight - 56; // strike line sits near the bottom, above labels
+		// Match .gh-strike { bottom: STRIKE_LINE_BOTTOM_PX } — use the line's
+		// center so notes align with it, not its top edge.
+		strikeY = strikeLineY(stage.clientHeight);
 	}
 
 	// --- Audio engine (WebAudio metronome) ---
@@ -87,6 +100,7 @@ const { heading = 'Pattern', tracks = [] } = Astro.props;
 	let rafId = 0;
 	let notes = [];
 	let beatDur = 0.5; // seconds per beat
+	let bpm = 80;
 	const lookahead = 4; // beats of runway visible ahead
 
 	function ensureAudio() {
@@ -139,19 +153,26 @@ const { heading = 'Pattern', tracks = [] } = Astro.props;
 		notes.push(el);
 	}
 
-	// Position each note based on where it sits relative to "now".
+	// Position each note based on where it sits relative to "now". Delegates
+	// the math to layOutNote() so the note is centered on the strike line at
+	// the exact moment the metronome click sounds.
 	function layoutNotes() {
 		if (!running || !audioCtx) return;
 		const now = audioCtx.currentTime;
-		const runwayPx = strikeY - 40;
-		const pxPerSec = runwayPx / (lookahead * beatDur);
+		const runwayPx = strikeY - RUNWAY_TOP_PX;
 		for (const note of notes) {
-			const strikeTime = Number(note.dataset.time);
-			const dt = strikeTime - now; // seconds until strike
-			const y = strikeY - dt * pxPerSec;
-			note.style.transform = 'translateY(' + y + 'px)';
-			note.style.opacity = dt < -0.15 ? '0.25' : '1';
-			if (dt < -0.5) note.remove();
+			const layout = layOutNote({
+				strikeTime: Number(note.dataset.time),
+				now,
+				strikeY,
+				runwayPx,
+				lookaheadBeats: lookahead,
+				bpm,
+				noteHeight: note.offsetHeight,
+			});
+			note.style.transform = 'translateY(' + layout.y + 'px)';
+			note.style.opacity = String(layout.opacity);
+			if (layout.expired) note.remove();
 		}
 		notes = notes.filter((n) => n.isConnected);
 	}
@@ -217,7 +238,8 @@ const { heading = 'Pattern', tracks = [] } = Astro.props;
 	function start() {
 		ensureAudio();
 		measure();
-		beatDur = 60 / Number(tempoSel.value);
+		bpm = Number(tempoSel.value);
+		beatDur = 60 / bpm;
 		startBtn.textContent = 'Stop';
 		startBtn.classList.add('running');
 

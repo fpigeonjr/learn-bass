@@ -7,6 +7,7 @@ import {
 	noteAtBeat,
 	secondsPerBeat,
 	layOutNote,
+	strikeLineY,
 	isRest,
 	type Note,
 } from './warmup';
@@ -111,27 +112,38 @@ describe('secondsPerBeat', () => {
 });
 
 describe('layOutNote', () => {
+	const noteHeight = 22;
 	const geometry = {
 		strikeY: 500,
 		runwayPx: 460,
 		lookaheadBeats: 4,
 		bpm: 80,
+		noteHeight,
 	};
 
-	it('places a note at the strike line exactly when now === strikeTime', () => {
+	it('centers the note on the strike line exactly when now === strikeTime (the click)', () => {
 		const now = 10;
 		const r = layOutNote({ strikeTime: now, now, ...geometry });
 		expect(r.dt).toBe(0);
-		expect(r.y).toBeCloseTo(500, 5);
+		// y is the top edge; the note's center must sit on the line so the
+		// visual crossing matches the metronome.
+		expect(r.y + noteHeight / 2).toBeCloseTo(500, 5);
+		expect(r.y).toBeCloseTo(500 - noteHeight / 2, 5);
 		expect(r.opacity).toBe(1);
 		expect(r.expired).toBe(false);
+	});
+
+	it('a taller note is centered, not top-aligned, at the strike moment', () => {
+		const now = 10;
+		const tall = layOutNote({ strikeTime: now, now, ...geometry, noteHeight: 26 });
+		expect(tall.y + 13).toBeCloseTo(500, 5);
 	});
 
 	it('shows a future note above the strike line (smaller y)', () => {
 		const now = 10;
 		const r = layOutNote({ strikeTime: now + 2, now, ...geometry });
 		expect(r.dt).toBeCloseTo(2, 5);
-		expect(r.y).toBeLessThan(500);
+		expect(r.y + noteHeight / 2).toBeLessThan(500);
 	});
 
 	it('dims a note slightly past the strike, and expires it further past', () => {
@@ -144,13 +156,28 @@ describe('layOutNote', () => {
 		expect(expired.expired).toBe(true);
 	});
 
+	it('falls at a constant rate: one beat of time = runwayPx / lookaheadBeats of distance', () => {
+		const now = 10;
+		const beatDur = secondsPerBeat(80); // 0.75s
+		const a = layOutNote({ strikeTime: now + 2 * beatDur, now, ...geometry });
+		const b = layOutNote({ strikeTime: now + 1 * beatDur, now, ...geometry });
+		expect(b.y - a.y).toBeCloseTo(geometry.runwayPx / geometry.lookaheadBeats, 5);
+	});
+
 	it('a note exactly `lookahead` beats in the future lands at the top of the runway', () => {
 		const beatDur = secondsPerBeat(80); // 0.75s
 		const now = 10;
 		const strikeTime = now + geometry.lookaheadBeats * beatDur;
 		const r = layOutNote({ strikeTime, now, ...geometry });
-		// top of runway = strikeY - runwayPx
-		expect(r.y).toBeCloseTo(500 - 460, 1);
+		// top of runway = strikeY - runwayPx (center-aligned, half note above)
+		expect(r.y).toBeCloseTo(500 - 460 - noteHeight / 2, 1);
+	});
+});
+
+describe('strikeLineY', () => {
+	it('places the line center at bottom-offset + half line-height from the stage bottom', () => {
+		// .gh-strike: bottom: 56px, height: 2px → center 57px above the bottom.
+		expect(strikeLineY(600)).toBe(600 - 57);
 	});
 });
 

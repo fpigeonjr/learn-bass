@@ -90,6 +90,7 @@ const groups = [...new Set(tracks.filter((t) => t.group).map((t) => t.group!))].
 	const stage = document.getElementById('gh-stage')!;
 	const tracks: Track[] = JSON.parse(document.getElementById('gh-tracks')!.textContent || '[]');
 	const lanesEl = stage.querySelector('.gh-lanes')!;
+	const varEl = document.getElementById('gh-variation')!;;
 	const countEl = document.getElementById('gh-count')!;
 	const startBtn = document.getElementById('gh-start')!;
 	const exSel = document.getElementById('gh-exercise') as HTMLSelectElement;

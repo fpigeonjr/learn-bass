@@ -212,27 +212,41 @@ describe('permutations exercise', () => {
 		expect(ex.label).toBe('Digital permutations (all 24)');
 	});
 
-	it('cycles through all 24 orderings, each across E → A → D → G', () => {
-		expect(ex.length).toBe(24 * 16);
+	it('cycles through all 24 orderings, each walking E → A → D → G and back', () => {
+		expect(ex.length).toBe(24 * 32);
 		expect(ex.chart).toHaveLength(ex.length);
 		PERMUTATION_ORDERS.forEach((order, p) => {
-			const base = p * 16;
+			const base = p * 32;
 			STRINGS.forEach((str, si) => {
 				order.forEach((fret, fi) => {
-					expect(ex.chart[base + si * 4 + fi]).toEqual({ string: str, fret });
+					// up: E → G
+					expect(ex.chart[base + si * 4 + fi]?.string).toBe(str);
+					expect(ex.chart[base + si * 4 + fi]?.fret).toBe(fret);
+					// down: G → E
+					expect(ex.chart[base + 16 + (3 - si) * 4 + fi]?.string).toBe(str);
+					expect(ex.chart[base + 16 + (3 - si) * 4 + fi]?.fret).toBe(fret);
 				});
 			});
 		});
 	});
 
-	it('starts with 1234 on E and ends with 4321 on G', () => {
-		expect(ex.chart.slice(0, 4)).toEqual([
-			{ string: 'E', fret: 1 }, { string: 'E', fret: 2 },
-			{ string: 'E', fret: 3 }, { string: 'E', fret: 4 },
+	it('marks the first note of each ordering as a variation start with a label', () => {
+		PERMUTATION_ORDERS.forEach((order, p) => {
+			const first = ex.chart[p * 32];
+			expect(first?.variationStart).toBe(true);
+			expect(first?.variationLabel).toBe(order.join('-') + ' \u00b7 ' + (p + 1) + '/24');
+		});
+		// No other note in the first ordering is marked.
+		expect(ex.chart.slice(1, 32).filter((n) => n?.variationStart)).toHaveLength(0);
+	});
+
+	it('starts with 1234 on E and ends the down-run with 4321 on E', () => {
+		expect(ex.chart.slice(0, 4).map((n) => [n!.string, n!.fret])).toEqual([
+			['E', 1], ['E', 2], ['E', 3], ['E', 4],
 		]);
-		expect(ex.chart.slice(-4)).toEqual([
-			{ string: 'G', fret: 4 }, { string: 'G', fret: 3 },
-			{ string: 'G', fret: 2 }, { string: 'G', fret: 1 },
+		// First ordering's down-run replays 1234 on G→D→A→E; final bar is E.
+		expect(ex.chart.slice(28, 32).map((n) => [n!.string, n!.fret])).toEqual([
+			['E', 1], ['E', 2], ['E', 3], ['E', 4],
 		]);
 	});
 });

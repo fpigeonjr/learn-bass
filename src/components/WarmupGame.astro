@@ -7,11 +7,11 @@
 // Props: a list of tracks (each = a note sequence to loop) and a heading
 // to label the track picker. Shared by warm-ups and scales.
 import { RUNWAY_TOP_PX, STRING_COLORS, STRIKE_LINE_BOTTOM_PX, strikeLineY } from '../lib/warmup';
-import type { StringId } from '../lib/warmup';
+import type { Note, StringId } from '../lib/warmup';
 
 interface Props {
 	heading?: string;
-	tracks: { id: string; label: string; group?: string; notes: ({ string: StringId; fret: number; boxStart?: boolean } | null)[] }[];
+	tracks: { id: string; label: string; group?: string; notes: (Note | null)[] }[];
 }
 
 const { heading = 'Pattern', tracks = [] } = Astro.props;
@@ -63,6 +63,7 @@ const groups = [...new Set(tracks.filter((t) => t.group).map((t) => t.group!))].
 			<div class="gh-lane" data-string="G"><span class="gh-label">G</span></div>
 		</div>
 		<div class="gh-strike"></div>
+		<div class="gh-variation" id="gh-variation" hidden></div>
 		<div class="gh-count" id="gh-count" hidden></div>
 	</div>
 	<script type="application/json" id="gh-tracks" set:html={JSON.stringify(tracks)} />
@@ -151,11 +152,14 @@ const groups = [...new Set(tracks.filter((t) => t.group).map((t) => t.group!))].
 		const lane = lanesEl.querySelector('[data-string="' + note.string + '"]');
 
 		const el = document.createElement('div');
-		el.className = 'gh-note' + (note.boxStart ? ' gh-note--box-start' : '');
+		el.className = 'gh-note'
+			+ (note.boxStart ? ' gh-note--box-start' : '')
+			+ (note.variationStart ? ' gh-note--variation' : '');
 		el.style.setProperty('--c', STRING_COLORS[note.string]);
 		el.dataset.time = String(time); // absolute audio-context strike time
 		el.dataset.beat = String(beat); // absolute beat index (for test identity)
 		if (note.boxStart) el.dataset.box = '2';
+		if (note.variationStart) el.dataset.variation = note.variationLabel || '';
 
 		// Fret number on the block (0 = open string).
 		const fret = document.createElement('span');
@@ -186,6 +190,16 @@ const groups = [...new Set(tracks.filter((t) => t.group).map((t) => t.group!))].
 			});
 			note.style.transform = 'translateY(' + layout.y + 'px)';
 			note.style.opacity = String(layout.opacity);
+			// A new variation announces itself the moment its first note
+			// crosses the strike line.
+			if (note.dataset.variation && layout.dt <= 0 && !note.dataset.varShown) {
+				note.dataset.varShown = '1';
+				varEl.textContent = note.dataset.variation;
+				varEl.hidden = false;
+				varEl.classList.remove('gh-variation--pulse');
+				void varEl.offsetWidth; // restart the pulse animation
+				varEl.classList.add('gh-variation--pulse');
+			}
 			if (layout.expired) note.remove();
 		}
 		notes = notes.filter((n) => n.isConnected);
@@ -245,6 +259,7 @@ const groups = [...new Set(tracks.filter((t) => t.group).map((t) => t.group!))].
 		beatIdx = 0;
 		noteBeat = 0;
 		countEl.hidden = true;
+		varEl.hidden = true;
 		startBtn.textContent = 'Start';
 		startBtn.classList.remove('running');
 	}
@@ -444,6 +459,41 @@ const groups = [...new Set(tracks.filter((t) => t.group).map((t) => t.group!))].
 		color: var(--ink);
 		text-shadow: 0 0 20px var(--accent);
 		pointer-events: none;
+	}
+
+	/* "New variation" readout — updated when each ordering's first note lands. */
+	.gh-variation {
+		position: absolute;
+		top: 0.6rem;
+		left: 0.6rem;
+		padding: 0.3rem 0.65rem;
+		border-radius: 6px;
+		font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+		font-size: 0.8rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		color: #f0c040;
+		background: rgba(240, 192, 64, 0.08);
+		border: 1px solid rgba(240, 192, 64, 0.45);
+		pointer-events: none;
+	}
+	.gh-variation--pulse {
+		animation: gh-var-pulse 1.2s ease-out;
+	}
+	@keyframes gh-var-pulse {
+		0% { box-shadow: 0 0 0 0 rgba(240, 192, 64, 0.7); background: rgba(240, 192, 64, 0.3); }
+		100% { box-shadow: 0 0 0 18px rgba(240, 192, 64, 0); background: rgba(240, 192, 64, 0.08); }
+	}
+
+	/* First note of a new variation: gold glow, slightly larger. */
+	:global(.gh-note--variation) {
+		border-color: #f0c040 !important;
+		height: 28px;
+		animation: gh-var-note 0.9s ease-in-out infinite alternate;
+	}
+	@keyframes gh-var-note {
+		from { box-shadow: 0 0 10px rgba(240, 192, 64, 0.5), 0 0 0 1.5px rgba(240, 192, 64, 1) inset; }
+		to { box-shadow: 0 0 22px rgba(240, 192, 64, 0.9), 0 0 0 1.5px rgba(240, 192, 64, 1) inset; }
 	}
 
 	@media (min-width: 720px) {

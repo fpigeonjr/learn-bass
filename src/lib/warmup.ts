@@ -20,6 +20,8 @@ export interface Note {
 	string: StringId;
 	fret: number; // 0 = open string, 1-4 = fretted (spider)
 	boxStart?: boolean; // first note of a new box/position up the neck
+	variationStart?: boolean; // first note of a new pattern variation
+	variationLabel?: string; // short readout shown when a variation starts
 }
 
 export type Slot = Note | null;
@@ -51,12 +53,21 @@ export function permutations<T>(items: T[]): T[][] {
 export const PERMUTATION_ORDERS = permutations([1, 2, 3, 4]);
 
 // Digital permutations (Lesson 1 — Greg Norris): one chart cycling through
-// all 24 finger orderings. Each ordering is played across all four strings
-// (E → A → D → G), then the next ordering begins. The whole 384-beat chart
-// loops.
-const permutationChart: Slot[] = PERMUTATION_ORDERS.flatMap((order) =>
-	STRINGS.flatMap((str) => order.map((f): Slot => s(str, f))),
-);
+// all 24 finger orderings. Each ordering walks up E → A → D → G and back
+// down G → D → A → E, then the next ordering begins. The whole 768-beat
+// chart loops.
+const permutationChart: Slot[] = PERMUTATION_ORDERS.flatMap((order, p) => {
+	const bar = (str: StringId) => order.map((f): Slot => s(str, f));
+	const up = STRINGS.flatMap(bar);
+	const down = [...STRINGS].reverse().flatMap(bar);
+	// Emphasize the first note of each ordering so a new variation is visible.
+	const first = up[0];
+	if (first) {
+		first.variationStart = true;
+		first.variationLabel = order.join('-') + ' \u00b7 ' + (p + 1) + '/24';
+	}
+	return [...up, ...down];
+});
 
 export const EXERCISES: ExerciseDef[] = [
 	{

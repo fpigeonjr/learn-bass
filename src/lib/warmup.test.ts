@@ -3,8 +3,7 @@ import {
 	STRINGS,
 	STRING_COLORS,
 	EXERCISES,
-	PERMUTATIONS,
-	ALL_EXERCISES,
+	PERMUTATION_ORDERS,
 	permutations,
 	getExercise,
 	noteAtBeat,
@@ -28,12 +27,13 @@ describe('STRINGS', () => {
 });
 
 describe('EXERCISES', () => {
-	it('has all four exercises', () => {
+	it('has all five exercises', () => {
 		expect(EXERCISES.map((e) => e.id)).toEqual([
 			'alternation',
 			'crossing',
 			'spider',
 			'roots',
+			'permutations',
 		]);
 	});
 
@@ -198,32 +198,42 @@ describe('permutations', () => {
 	});
 });
 
-describe('PERMUTATIONS', () => {
-	it('has all 24 finger orderings with unique ids and labels', () => {
-		expect(PERMUTATIONS).toHaveLength(24);
-		expect(new Set(PERMUTATIONS.map((p) => p.id))).toHaveLength(24);
-		for (const p of PERMUTATIONS) {
-			expect(p.id).toMatch(/^perm-[1-4]{4}$/);
-			expect(p.label).toBe('Permutation ' + p.id.slice(5));
-		}
+describe('permutations exercise', () => {
+	const ex = getExercise('permutations');
+
+	it('the core list now includes the single permutations track', () => {
+		expect(EXERCISES.map((e) => e.id)).toEqual([
+			'alternation',
+			'crossing',
+			'spider',
+			'roots',
+			'permutations',
+		]);
+		expect(ex.label).toBe('Digital permutations (all 24)');
 	});
 
-	it('each chart is the finger order on E, then the same order on A, for 8 beats', () => {
-		for (const p of PERMUTATIONS) {
-			expect(p.length).toBe(8);
-			expect(p.chart).toHaveLength(8);
-			const order = p.id.slice(5).split('').map(Number);
-			order.forEach((fret, i) => {
-				expect(p.chart[i]).toEqual({ string: 'E', fret });
-				expect(p.chart[i + 4]).toEqual({ string: 'A', fret });
+	it('cycles through all 24 orderings, each across E → A → D → G', () => {
+		expect(ex.length).toBe(24 * 16);
+		expect(ex.chart).toHaveLength(ex.length);
+		PERMUTATION_ORDERS.forEach((order, p) => {
+			const base = p * 16;
+			STRINGS.forEach((str, si) => {
+				order.forEach((fret, fi) => {
+					expect(ex.chart[base + si * 4 + fi]).toEqual({ string: str, fret });
+				});
 			});
-		}
+		});
 	});
 
-	it('ALL_EXERCISES = core exercises first, then permutations', () => {
-		expect(ALL_EXERCISES.slice(0, EXERCISES.length)).toEqual(EXERCISES);
-		expect(ALL_EXERCISES.slice(EXERCISES.length)).toEqual(PERMUTATIONS);
-		expect(getExercise('perm-2413').label).toBe('Permutation 2413');
+	it('starts with 1234 on E and ends with 4321 on G', () => {
+		expect(ex.chart.slice(0, 4)).toEqual([
+			{ string: 'E', fret: 1 }, { string: 'E', fret: 2 },
+			{ string: 'E', fret: 3 }, { string: 'E', fret: 4 },
+		]);
+		expect(ex.chart.slice(-4)).toEqual([
+			{ string: 'G', fret: 4 }, { string: 'G', fret: 3 },
+			{ string: 'G', fret: 2 }, { string: 'G', fret: 1 },
+		]);
 	});
 });
 

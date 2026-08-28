@@ -35,6 +35,29 @@ export interface ExerciseDef {
 const s = (string: StringId, fret: number): Slot => ({ string, fret });
 const R = null; // rest
 
+// All n! orderings of an array, in lexicographic order.
+export function permutations<T>(items: T[]): T[][] {
+	if (items.length <= 1) return [items.slice()];
+	const out: T[][] = [];
+	for (let i = 0; i < items.length; i++) {
+		const rest = items.slice(0, i).concat(items.slice(i + 1));
+		for (const tail of permutations(rest)) {
+			out.push([items[i], ...tail]);
+		}
+	}
+	return out;
+}
+
+export const PERMUTATION_ORDERS = permutations([1, 2, 3, 4]);
+
+// Digital permutations (Lesson 1 — Greg Norris): one chart cycling through
+// all 24 finger orderings. Each ordering is played across all four strings
+// (E → A → D → G), then the next ordering begins. The whole 384-beat chart
+// loops.
+const permutationChart: Slot[] = PERMUTATION_ORDERS.flatMap((order) =>
+	STRINGS.flatMap((str) => order.map((f): Slot => s(str, f))),
+);
+
 export const EXERCISES: ExerciseDef[] = [
 	{
 		id: 'alternation',
@@ -79,41 +102,17 @@ export const EXERCISES: ExerciseDef[] = [
 			s('D', 0), s('D', 0), s('G', 0), s('G', 0),
 		],
 	},
+	{
+		id: 'permutations',
+		label: 'Digital permutations (all 24)',
+		length: permutationChart.length,
+		chart: permutationChart,
+	},
 ];
 
 export function getExercise(id: string): ExerciseDef {
-	return ALL_EXERCISES.find((e) => e.id === id) ?? EXERCISES[0];
+	return EXERCISES.find((e) => e.id === id) ?? EXERCISES[0];
 }
-
-// --- Digital permutations (Lesson 1 — Greg Norris) ---
-// All 24 orderings of fingers 1-2-3-4. Each permutation is one bar of the
-// finger order on the E string, then the same order on the A string, looped.
-
-// All n! orderings of an array, in lexicographic order.
-export function permutations<T>(items: T[]): T[][] {
-	if (items.length <= 1) return [items.slice()];
-	const out: T[][] = [];
-	for (let i = 0; i < items.length; i++) {
-		const rest = items.slice(0, i).concat(items.slice(i + 1));
-		for (const tail of permutations(rest)) {
-			out.push([items[i], ...tail]);
-		}
-	}
-	return out;
-}
-
-export const PERMUTATIONS: ExerciseDef[] = permutations([1, 2, 3, 4]).map((order) => ({
-	id: 'perm-' + order.join(''),
-	label: 'Permutation ' + order.join(''),
-	length: 8,
-	chart: [
-		...order.map((f): Slot => s('E', f)),
-		...order.map((f): Slot => s('A', f)),
-	],
-}));
-
-// Everything the play-along player can pick from, core exercises first.
-export const ALL_EXERCISES: ExerciseDef[] = [...EXERCISES, ...PERMUTATIONS];
 
 // Which note (string + fret) — or null for a rest — sounds on a given beat.
 export function noteAtBeat(exercise: ExerciseDef, beat: number): Slot {

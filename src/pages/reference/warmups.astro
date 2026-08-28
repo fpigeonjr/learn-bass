@@ -2,16 +2,10 @@
 import Layout from '../../layouts/Layout.astro';
 import WarmupGame from '../../components/WarmupGame.astro';
 import { url } from '../../lib/url';
-import { ALL_EXERCISES } from '../../lib/warmup';
+import { EXERCISES } from '../../lib/warmup';
 
-// Warm-up exercises → chart tracks (id, label, group, notes). Permutations
-// get their own optgroup in the picker.
-const tracks = ALL_EXERCISES.map((e) => ({
-	id: e.id,
-	label: e.label,
-	group: e.id.startsWith('perm-') ? 'Digital permutations' : undefined,
-	notes: e.chart,
-}));
+// Warm-up exercises → chart tracks (id, label, notes).
+const tracks = EXERCISES.map((e) => ({ id: e.id, label: e.label, notes: e.chart }));
 ---
 
 <Layout title="Warm-ups & Right Hand">
@@ -44,7 +38,7 @@ const tracks = ALL_EXERCISES.map((e) => ({
 			</div>
 			<ul>
 				<li><strong>No trumpet fingers</strong> — stay close to the fretboard</li>
-		<li><strong>Say the finger number aloud</strong> as you play — or run any of them in the play-along chart below (Digital permutations group)</li>
+		<li><strong>Say the finger number aloud</strong> as you play — or pick “Digital permutations (all 24)” in the play-along chart below; it cycles every ordering across all four strings</li>
 				<li>Say the finger number aloud as you play</li>
 			</ul>
 		</article>

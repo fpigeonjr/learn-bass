@@ -11,10 +11,17 @@ import type { StringId } from '../lib/warmup';
 
 interface Props {
 	heading?: string;
-	tracks: { id: string; label: string; notes: ({ string: StringId; fret: number; boxStart?: boolean } | null)[] }[];
+	tracks: { id: string; label: string; group?: string; notes: ({ string: StringId; fret: number; boxStart?: boolean } | null)[] }[];
 }
 
 const { heading = 'Pattern', tracks = [] } = Astro.props;
+
+// Ungrouped tracks first, then optgroups in first-appearance order.
+const plain = tracks.filter((t) => !t.group);
+const groups = [...new Set(tracks.filter((t) => t.group).map((t) => t.group!))].map((g) => ({
+	name: g,
+	tracks: tracks.filter((t) => t.group === g),
+}));
 ---
 
 <section class="gh">
@@ -22,8 +29,15 @@ const { heading = 'Pattern', tracks = [] } = Astro.props;
 		<label class="gh-field">
 			<span>{heading}</span>
 			<select id="gh-exercise">
-				{tracks.map((t) => (
+				{plain.map((t) => (
 					<option value={t.id}>{t.label}</option>
+				))}
+				{groups.map((g) => (
+					<optgroup label={g.name}>
+						{g.tracks.map((t) => (
+							<option value={t.id}>{t.label}</option>
+						))}
+					</optgroup>
 				))}
 			</select>
 		</label>

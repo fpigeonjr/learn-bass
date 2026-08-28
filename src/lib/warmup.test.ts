@@ -3,6 +3,9 @@ import {
 	STRINGS,
 	STRING_COLORS,
 	EXERCISES,
+	PERMUTATIONS,
+	ALL_EXERCISES,
+	permutations,
 	getExercise,
 	noteAtBeat,
 	secondsPerBeat,
@@ -178,6 +181,49 @@ describe('strikeLineY', () => {
 	it('places the line center at bottom-offset + half line-height from the stage bottom', () => {
 		// .gh-strike: bottom: 56px, height: 2px → center 57px above the bottom.
 		expect(strikeLineY(600)).toBe(600 - 57);
+	});
+});
+
+describe('permutations', () => {
+	it('produces all n! orderings, each exactly once', () => {
+		const result = permutations([1, 2, 3, 4]);
+		expect(result).toHaveLength(24);
+		expect(new Set(result.map((p) => p.join('')))).toHaveLength(24);
+		for (const p of result) expect([...p].sort()).toEqual([1, 2, 3, 4]);
+	});
+
+	it('handles the trivial cases', () => {
+		expect(permutations([])).toEqual([[]]);
+		expect(permutations(['x'])).toEqual([['x']]);
+	});
+});
+
+describe('PERMUTATIONS', () => {
+	it('has all 24 finger orderings with unique ids and labels', () => {
+		expect(PERMUTATIONS).toHaveLength(24);
+		expect(new Set(PERMUTATIONS.map((p) => p.id))).toHaveLength(24);
+		for (const p of PERMUTATIONS) {
+			expect(p.id).toMatch(/^perm-[1-4]{4}$/);
+			expect(p.label).toBe('Permutation ' + p.id.slice(5));
+		}
+	});
+
+	it('each chart is the finger order on E, then the same order on A, for 8 beats', () => {
+		for (const p of PERMUTATIONS) {
+			expect(p.length).toBe(8);
+			expect(p.chart).toHaveLength(8);
+			const order = p.id.slice(5).split('').map(Number);
+			order.forEach((fret, i) => {
+				expect(p.chart[i]).toEqual({ string: 'E', fret });
+				expect(p.chart[i + 4]).toEqual({ string: 'A', fret });
+			});
+		}
+	});
+
+	it('ALL_EXERCISES = core exercises first, then permutations', () => {
+		expect(ALL_EXERCISES.slice(0, EXERCISES.length)).toEqual(EXERCISES);
+		expect(ALL_EXERCISES.slice(EXERCISES.length)).toEqual(PERMUTATIONS);
+		expect(getExercise('perm-2413').label).toBe('Permutation 2413');
 	});
 });
 

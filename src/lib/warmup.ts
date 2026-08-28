@@ -82,8 +82,38 @@ export const EXERCISES: ExerciseDef[] = [
 ];
 
 export function getExercise(id: string): ExerciseDef {
-	return EXERCISES.find((e) => e.id === id) ?? EXERCISES[0];
+	return ALL_EXERCISES.find((e) => e.id === id) ?? EXERCISES[0];
 }
+
+// --- Digital permutations (Lesson 1 — Greg Norris) ---
+// All 24 orderings of fingers 1-2-3-4. Each permutation is one bar of the
+// finger order on the E string, then the same order on the A string, looped.
+
+// All n! orderings of an array, in lexicographic order.
+export function permutations<T>(items: T[]): T[][] {
+	if (items.length <= 1) return [items.slice()];
+	const out: T[][] = [];
+	for (let i = 0; i < items.length; i++) {
+		const rest = items.slice(0, i).concat(items.slice(i + 1));
+		for (const tail of permutations(rest)) {
+			out.push([items[i], ...tail]);
+		}
+	}
+	return out;
+}
+
+export const PERMUTATIONS: ExerciseDef[] = permutations([1, 2, 3, 4]).map((order) => ({
+	id: 'perm-' + order.join(''),
+	label: 'Permutation ' + order.join(''),
+	length: 8,
+	chart: [
+		...order.map((f): Slot => s('E', f)),
+		...order.map((f): Slot => s('A', f)),
+	],
+}));
+
+// Everything the play-along player can pick from, core exercises first.
+export const ALL_EXERCISES: ExerciseDef[] = [...EXERCISES, ...PERMUTATIONS];
 
 // Which note (string + fret) — or null for a rest — sounds on a given beat.
 export function noteAtBeat(exercise: ExerciseDef, beat: number): Slot {

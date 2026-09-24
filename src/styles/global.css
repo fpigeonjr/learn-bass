@@ -212,6 +212,8 @@ h2 { font-family: 'Bungee', sans-serif; font-weight: 400; font-size: 1.15rem; le
 .board .info{ flex:1; min-width:0; }
 .board .title{ font-weight: 800; letter-spacing:-0.01em; }
 .board .artist{ color: var(--muted); font-size: 0.82rem; }
+.board .ug-link { margin-left: 0.5rem; color: var(--gh-yellow); text-decoration: none; font-size: 0.78rem; white-space: nowrap; }
+.board .ug-link:hover { text-decoration: underline; }
 .badge { font-size: 0.6rem; text-transform:uppercase; letter-spacing:0.1em; padding:0.2rem 0.5rem; border-radius:999px; border:1px solid #333; color:var(--muted); font-weight:800; background: rgba(255,255,255,0.05); }
 .badge.green{ color: var(--gh-green); border-color: var(--gh-green); background: rgba(46,184,114,0.14); box-shadow: 0 0 10px rgba(46,184,114,0.35); }
 .badge.backup{ opacity:0.7; }

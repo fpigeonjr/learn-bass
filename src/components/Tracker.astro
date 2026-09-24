@@ -21,7 +21,12 @@ const statusOrder = ['cold', 'dusty', 'warm', 'green'] as const;
 						{s.title}
 						{s.tier === 'backup' && <span class="badge backup">backup</span>}
 					</div>
-					<div class="artist">{s.artist}</div>
+					<div class="artist">
+						{s.artist}
+						{s.ugTab && (
+							<a href={s.ugTab} target="_blank" rel="noopener" class="ug-link">tab ↗</a>
+						)}
+					</div>
 				</div>
 				<div class="status" data-status={s.status}>
 					{statusOrder.map((st) => (

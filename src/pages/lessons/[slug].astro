@@ -25,6 +25,12 @@ const song = songs.find((s) => s.slug === slug);
 			<a href={url('lessons/')}>← all lessons</a>
 		</nav>
 
+		{song?.ugTab && (
+			<p style="margin-top:0;">
+				<a href={song.ugTab} target="_blank" rel="noopener">Ultimate Guitar tab ↗</a>
+			</p>
+		)}
+
 		<article class="lesson-body">
 			<Fragment set:html={lesson?.html} />
 		</article>

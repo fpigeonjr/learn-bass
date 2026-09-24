@@ -14,6 +14,7 @@ export interface Song {
 	targetWeek: number; // 1..7, soft calendar guidance
 	hardPart: string; // shown by the "what now" pointer
 	hasLesson: boolean; // whether a full lesson exists yet
+	ugTab?: string; // optional Ultimate Guitar tab URL
 }
 
 export const songs: Song[] = [
@@ -27,6 +28,7 @@ export const songs: Song[] = [
 		targetWeek: 1,
 		hardPart: 'intro hook + verse root-motion',
 		hasLesson: true,
+		ugTab: 'https://tabs.ultimate-guitar.com/tab/weezer/say-it-aint-so-official-1952129',
 	},
 	{
 		slug: 'dancing-queen',
@@ -38,6 +40,7 @@ export const songs: Song[] = [
 		targetWeek: 1,
 		hardPart: 'octave disco line (verse + chorus)',
 		hasLesson: true,
+		ugTab: 'https://tabs.ultimate-guitar.com/tab/abba/dancing-queen-official-1979611',
 	},
 	{
 		slug: 'interstate-love-song',
@@ -49,6 +52,7 @@ export const songs: Song[] = [
 		targetWeek: 1,
 		hardPart: 'verse root-motion + unison runs',
 		hasLesson: true,
+		ugTab: 'https://tabs.ultimate-guitar.com/tab/stone-temple-pilots/interstate-love-song-official-1958787',
 	},
 	{
 		slug: 'plush',
@@ -60,6 +64,7 @@ export const songs: Song[] = [
 		targetWeek: 2,
 		hardPart: 'verse pocket',
 		hasLesson: true,
+		ugTab: 'https://tabs.ultimate-guitar.com/tab/stone-temple-pilots/plush-official-2130323',
 	},
 	{
 		slug: 'wicked-garden',
@@ -71,6 +76,7 @@ export const songs: Song[] = [
 		targetWeek: 2,
 		hardPart: 'verse groove',
 		hasLesson: true,
+		ugTab: 'https://tabs.ultimate-guitar.com/tab/stone-temple-pilots/wicked-garden-official-2932436',
 	},
 	{
 		slug: 'hotel-california',
@@ -82,6 +88,7 @@ export const songs: Song[] = [
 		targetWeek: 3,
 		hardPart: 'intro arpeggio + verse root-motion',
 		hasLesson: true,
+		ugTab: 'https://tabs.ultimate-guitar.com/tab/eagles/hotel-california-official-1910943',
 	},
 	{
 		slug: 'faithfully',
@@ -93,6 +100,7 @@ export const songs: Song[] = [
 		targetWeek: 3,
 		hardPart: 'verse root-motion (key of G)',
 		hasLesson: true,
+		ugTab: 'https://tabs.ultimate-guitar.com/tab/journey/faithfully-official-1975267',
 	},
 	{
 		slug: 'my-own-worst-enemy',
@@ -104,6 +112,7 @@ export const songs: Song[] = [
 		targetWeek: 0,
 		hardPart: 'refresh pass',
 		hasLesson: true,
+		ugTab: 'https://tabs.ultimate-guitar.com/tab/lit/my-own-worst-enemy-official-2134857',
 	},
 	{
 		slug: 'cumbersome',
@@ -115,6 +124,31 @@ export const songs: Song[] = [
 		targetWeek: 0,
 		hardPart: 're-learn the part',
 		hasLesson: true,
+		ugTab: 'https://tabs.ultimate-guitar.com/tab/seven-mary-three/cumbersome-official-2218299',
+	},
+	{
+		slug: 'kryptonite',
+		title: 'Kryptonite',
+		artist: '3 Doors Down',
+		status: 'cold',
+		tier: 'core',
+		order: 10,
+		targetWeek: 0,
+		hardPart: 'to chart — tab + root-motion',
+		hasLesson: false,
+		ugTab: 'https://tabs.ultimate-guitar.com/tab/3-doors-down/kryptonite-official-1942221',
+	},
+	{
+		slug: 'summer-of-69',
+		title: 'Summer of \u201969',
+		artist: 'Bryan Adams',
+		status: 'cold',
+		tier: 'core',
+		order: 11,
+		targetWeek: 0,
+		hardPart: 'to chart — tab + root-motion',
+		hasLesson: false,
+		ugTab: 'https://tabs.ultimate-guitar.com/tab/bryan-adams/summer-of-69-official-1960235',
 	},
 ];
 

@@ -30,11 +30,11 @@ test.describe('whole app', () => {
     }
   });
 
-  test('lessons index lists orientation + 9 songs', async ({ page }) => {
+  test('lessons index lists orientation + 11 songs', async ({ page }) => {
     await page.goto('/learn-bass/lessons/');
     await expect(page.locator('text=Orientation')).toBeVisible();
-    // 1 orientation + 9 songs = at least 10 list items (grouped in 2 cards)
-    await expect(page.locator('.board li')).toHaveCount(10);
+    // 1 orientation + 11 songs = at least 12 list items (grouped in 2 cards)
+    await expect(page.locator('.board li')).toHaveCount(12);
   });
 
   test('reference index lists 4 cards', async ({ page }) => {
@@ -42,9 +42,9 @@ test.describe('whole app', () => {
     await expect(page.locator('.board li')).toHaveCount(4);
   });
 
-  test('setlist page shows 9 songs', async ({ page }) => {
+  test('setlist page shows 11 songs', async ({ page }) => {
     await page.goto('/learn-bass/reference/setlist/');
-    await expect(page.locator('.board li')).toHaveCount(9);
+    await expect(page.locator('.board li')).toHaveCount(11);
   });
 
   test('unknown lesson returns 404', async ({ page }) => {

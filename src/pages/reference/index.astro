@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { url } from '../../lib/url';
+import { songs } from '../../data/songs';
 ---
 
 <Layout title="Reference">
@@ -30,7 +31,7 @@ import { url } from '../../lib/url';
 					<span class="order">03</span>
 					<div class="info">
 						<div class="title">Setlist & form map</div>
-						<div class="artist">All 9 songs: key, tempo, status, form</div>
+						<div class="artist">All {songs.length} songs: key, tempo, status, form</div>
 					</div>
 					<a href={url("reference/setlist/")}>open</a>
 				</li>

@@ -7,9 +7,9 @@ test.describe('dashboard', () => {
 		await page.waitForSelector('h1');
 	});
 
-	test('renders the setlist board with all 9 songs', async ({ page }) => {
+	test('renders the setlist board with all 11 songs', async ({ page }) => {
 		const rows = page.locator('.board li');
-		await expect(rows).toHaveCount(9);
+		await expect(rows).toHaveCount(11);
 	});
 
 	test('clicking a status updates it and persists to localStorage', async ({ page }) => {

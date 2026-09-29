@@ -16,9 +16,9 @@ function s(overrides: Partial<Song> & { slug: string }): Song {
 }
 
 describe('songs data', () => {
-	it('has 11 songs with unique slugs', () => {
-		expect(songs).toHaveLength(11);
-		expect(new Set(songs.map((x) => x.slug)).size).toBe(11);
+	it('has 12 songs with unique slugs', () => {
+		expect(songs).toHaveLength(12);
+		expect(new Set(songs.map((x) => x.slug)).size).toBe(12);
 	});
 	it('GIG_DATE is Oct 9 2026', () => {
 		expect(GIG_DATE.getFullYear()).toBe(2026);

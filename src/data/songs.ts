@@ -150,6 +150,18 @@ export const songs: Song[] = [
 		hasLesson: false,
 		ugTab: 'https://tabs.ultimate-guitar.com/tab/bryan-adams/summer-of-69-official-1960235',
 	},
+	{
+		slug: 'friends-in-low-places',
+		title: 'Friends in Low Places',
+		artist: 'Garth Brooks',
+		status: 'cold',
+		tier: 'core',
+		order: 12,
+		targetWeek: 0,
+		hardPart: 'to chart — tab + root-motion',
+		hasLesson: false,
+		ugTab: 'https://tabs.ultimate-guitar.com/tab/garth-brooks/friends-in-low-places-official-2423303',
+	},
 ];
 
 export const GIG_DATE = new Date('2026-10-09T00:00:00-05:00');

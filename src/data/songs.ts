@@ -162,6 +162,18 @@ export const songs: Song[] = [
 		hasLesson: false,
 		ugTab: 'https://tabs.ultimate-guitar.com/tab/garth-brooks/friends-in-low-places-official-2423303',
 	},
+	{
+		slug: 'to-be-loved-by-you',
+		title: 'To Be Loved By You',
+		artist: 'Parker McCollum',
+		status: 'cold',
+		tier: 'core',
+		order: 13,
+		targetWeek: 0,
+		hardPart: 'to chart — tab + root-motion',
+		hasLesson: false,
+		ugTab: 'https://tabs.ultimate-guitar.com/tab/parker-mccollum/to-be-loved-by-you-official-5011297',
+	},
 ];
 
 export const GIG_DATE = new Date('2026-10-09T00:00:00-05:00');

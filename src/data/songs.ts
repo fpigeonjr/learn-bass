@@ -174,6 +174,18 @@ export const songs: Song[] = [
 		hasLesson: false,
 		ugTab: 'https://tabs.ultimate-guitar.com/tab/parker-mccollum/to-be-loved-by-you-official-5011297',
 	},
+	{
+		slug: 'in-too-deep',
+		title: 'In Too Deep',
+		artist: 'Sum 41',
+		status: 'cold',
+		tier: 'core',
+		order: 14,
+		targetWeek: 0,
+		hardPart: 'to chart — tab + root-motion',
+		hasLesson: false,
+		ugTab: 'https://tabs.ultimate-guitar.com/tab/sum-41/in-too-deep-official-1949741',
+	},
 ];
 
 export const GIG_DATE = new Date('2026-10-09T00:00:00-05:00');

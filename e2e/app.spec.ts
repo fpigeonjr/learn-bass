@@ -30,11 +30,11 @@ test.describe('whole app', () => {
     }
   });
 
-  test('lessons index lists orientation + 14 songs', async ({ page }) => {
+  test('lessons index lists orientation + 20 songs', async ({ page }) => {
     await page.goto('/learn-bass/lessons/');
     await expect(page.locator('text=Orientation')).toBeVisible();
-    // 1 orientation + 14 songs = at least 15 list items (grouped in 2 cards)
-    await expect(page.locator('.board li')).toHaveCount(15);
+    // 1 orientation + 20 songs (grouped in 2 cards)
+    await expect(page.locator('.board li')).toHaveCount(21);
   });
 
   test('reference index lists 4 cards', async ({ page }) => {
@@ -42,19 +42,19 @@ test.describe('whole app', () => {
     await expect(page.locator('.board li')).toHaveCount(4);
   });
 
-  test('setlist page shows 14 songs', async ({ page }) => {
+  test('setlist page shows 20 songs', async ({ page }) => {
     await page.goto('/learn-bass/reference/setlist/');
-    await expect(page.locator('.board li')).toHaveCount(14);
+    await expect(page.locator('.board li')).toHaveCount(20);
   });
 
   test('static pages list archived songs rather than hiding them', async ({ page }) => {
     // Every song ships `archived: false`, so the badge must not appear by
     // default. The important invariant is the inverse: archiving is a display
-    // scope, never a deletion, so the static list keeps all 14 rows and the
+    // scope, never a deletion, so the static list keeps all 20 rows and the
     // lesson routes keep resolving (see getStaticPaths in [slug].astro).
     await page.goto('/learn-bass/lessons/');
     await expect(page.locator('.badge.archive')).toHaveCount(0);
-    await expect(page.locator('.board li')).toHaveCount(15); // 14 songs + orientation
+    await expect(page.locator('.board li')).toHaveCount(21); // 20 songs + orientation
 
     await page.goto('/learn-bass/reference/setlist/');
     await expect(page.locator('.badge.archive')).toHaveCount(0);

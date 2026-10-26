@@ -4,7 +4,7 @@ A single-person bass practice queue: the songs you already know, plus the ones y
 
 ## What it is
 
-- **14 songs on the setlist** (12 core + 2 backups), each with a status, an archived flag, and a named hard part.
+- **20 songs on the setlist** (18 core + 2 backups), each with a status, an archived flag, and a named hard part.
 - **10 lesson pages** — an orientation plus 9 authored song lessons. Each covers: form map, root motion, signature hooks (tab), tempo ramp, the hard part, feel, memory cue, and a technique primer. The remaining songs render a "being written" stub until their lesson lands.
 - **Reference cheat sheets**: warm-ups & right hand, scales & arpeggios (mapped to the setlist), setlist & form map, glossary.
 - **A dashboard** (single-user, localStorage-only) with a "currently learning" hero, a status legend that doubles as a filter, the song board, and a daily warm-up checklist.
@@ -85,13 +85,13 @@ Push to `main`. The workflow in `.github/workflows/deploy.yml` builds and deploy
 - **Status buttons vs archive button accessible state.** Both use `aria-pressed` now; the four status buttons additionally convey state via the `.active` class.
 - **Archive state is browser-local.** No export/import, no sync — a browser-clear forfeits the queue.
 - **Gig-era vocabulary remains.** `tier` (core/backup), `order`, and the "Setlist" page title were kept for a smaller diff; `tier` no longer affects priority.
-- **Five songs still need charting**: Kryptonite, Summer of '69, Friends in Low Places, To Be Loved By You, In Too Deep (`hasLesson: false`).
+- **Eleven songs still need charting**: Kryptonite, Summer of '69, Friends in Low Places, To Be Loved By You, In Too Deep, Misery Business, crushcrushcrush, College Kids, Be My Escape, Who I Am Hates Who I've Been, Californication (`hasLesson: false`).
 - **Faithfully** is a Boyce Avenue arrangement in the key of G — root-motion voicings need confirming with Paul.
 
 ## To do
 
 - [ ] Source verified BPM per song (recordings), confirm against Ultimate Guitar
-- [ ] Chart the 5 unauthored songs
+- [ ] Chart the 11 unauthored songs
 - [ ] Decide whether song editing belongs in the UI or stays a code edit
 - [ ] Vet/swap the YouTube bass-cover links
 - [ ] Confirm the Faithfully (key of G) voicings with Paul

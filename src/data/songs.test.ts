@@ -16,14 +16,34 @@ function s(overrides: Partial<Song> & { slug: string }): Song {
 }
 
 describe('songs data', () => {
-	it('has 14 songs with unique slugs', () => {
-		expect(songs).toHaveLength(14);
-		expect(new Set(songs.map((x) => x.slug)).size).toBe(14);
+	it('has 20 songs with unique slugs', () => {
+		expect(songs).toHaveLength(20);
+		expect(new Set(songs.map((x) => x.slug)).size).toBe(20);
 	});
 
 	it('ships every song archived: false so the user opts in', () => {
 		// Archive defaults must not encode guesses about what is already learned.
 		expect(songs.every((x) => x.archived === false)).toBe(true);
+	});
+
+	it.each([
+		['misery-business', 'https://tabs.ultimate-guitar.com/tab/paramore/misery-business-guitar-pro-590967'],
+		['crushcrushcrush', 'https://tabs.ultimate-guitar.com/tab/paramore/crushcrushcrush-official-1916653'],
+	])('includes %s with an interactive UG chart', (slug, ugTab) => {
+		expect(songs.find((song) => song.slug === slug)).toMatchObject({
+			artist: 'Paramore', status: 'cold', archived: false, hasLesson: false, ugTab,
+		});
+	});
+
+	it.each([
+		['college-kids', 'Relient K', 'https://tabs.ultimate-guitar.com/tab/relient-k/college-kids-guitar-pro-310718'],
+		['be-my-escape', 'Relient K', 'https://tabs.ultimate-guitar.com/tab/relient-k/be-my-escape-official-3567452'],
+		['who-i-am-hates-who-ive-been', 'Relient K', 'https://tabs.ultimate-guitar.com/tab/relient-k/who-i-am-hates-who-ive-been-official-3935363'],
+		['californication', 'Red Hot Chili Peppers', 'https://tabs.ultimate-guitar.com/tab/red-hot-chili-peppers/californication-guitar-pro-229736'],
+	])('includes %s as a new active song with a UG chart', (slug, artist, ugTab) => {
+		expect(songs.find((song) => song.slug === slug)).toMatchObject({
+			artist, status: 'cold', archived: false, hasLesson: false, ugTab,
+		});
 	});
 
 	it('GIG_DATE is Oct 9 2026', () => {

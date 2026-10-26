@@ -15,12 +15,12 @@ test.describe('dashboard', () => {
 		await page.waitForSelector('h1');
 	});
 
-	test('renders the board with all 14 songs and no archived rows visible by default', async ({
+	test('renders the board with all 20 songs and no archived rows visible by default', async ({
 		page,
 	}) => {
-		// Archive defaults to off: every song ships unarchived, so all 14 show.
+		// Archive defaults to off: every song ships unarchived, so all 20 show.
 		const visible = page.locator('.board li:not([hidden])');
-		await expect(visible).toHaveCount(14);
+		await expect(visible).toHaveCount(20);
 		await expect(page.locator('#show-archived')).not.toBeChecked();
 	});
 
@@ -115,7 +115,7 @@ test.describe('dashboard', () => {
 		// itself: every visible row must be dusty, and it must be a real subset.
 		const dustyCount = Number(await page.locator('#count-dusty').textContent());
 		expect(dustyCount).toBeGreaterThan(0);
-		expect(dustyCount).toBeLessThan(14);
+		expect(dustyCount).toBeLessThan(20);
 
 		const rows = page.locator('.board li:not([hidden])');
 		await expect(rows).toHaveCount(dustyCount);
@@ -132,7 +132,7 @@ test.describe('dashboard', () => {
 		await page.goto('/learn-bass/#status=banana');
 		await page.reload();
 		await page.waitForSelector('h1');
-		await expect(page.locator('.board li:not([hidden])')).toHaveCount(14);
+		await expect(page.locator('.board li:not([hidden])')).toHaveCount(20);
 	});
 
 	test('queue hero shows what to learn next', async ({ page }) => {
@@ -240,13 +240,13 @@ test.describe('dashboard', () => {
 		// …and archiving half the board must remove songs from numerator *and*
 		// denominator rather than depressing the meter.
 		const rows = page.locator('.board li');
-		for (let i = 0; i < 7; i++) {
+		for (let i = 0; i < 10; i++) {
 			await rows.nth(i).locator('[data-archive]').click();
 		}
 
 		await expect(page.locator('#green-pct')).toHaveText('100%');
-		await expect(page.locator('#count-archived')).toHaveText('7');
-		await expect(page.locator('#count-current')).toContainText('7');
+		await expect(page.locator('#count-archived')).toHaveText('10');
+		await expect(page.locator('#count-current')).toContainText('10');
 		// The `current` label must survive hydration: an earlier version set
 		// textContent on the whole node and destroyed the <small> child.
 		await expect(page.locator('#count-current small')).toHaveText('current');

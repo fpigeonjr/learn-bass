@@ -45,13 +45,29 @@ export function saveArchived(slug: string, archived: boolean): void {
 	localStorage.setItem(ARCHIVE_KEY, JSON.stringify(all));
 }
 
-/** Merge shipped defaults with the user's localStorage overrides. */
+/** Merge shipped defaults with the user's localStorage overrides.
+ *
+ * Overrides are validated, not trusted: localStorage is user-writable, and a
+ * stray value (tampered, or left behind by an older build) would otherwise
+ * produce a status outside the four known ones — which vanishes from the
+ * counts, the meter, and every status chip, and cannot be filtered to.
+ */
 export function liveSongs(songs: Song[], state: StoredState = loadState()): Song[] {
-	return songs.map((s) => ({
-		...s,
-		status: state.status[s.slug] ?? s.status,
-		archived: state.archived[s.slug] ?? s.archived,
-	}));
+	return songs.map((s) => {
+		const override = state.status[s.slug];
+		const archivedOverride = state.archived[s.slug];
+		return {
+			...s,
+			status: isStatus(override) ? override : s.status,
+			archived: typeof archivedOverride === 'boolean' ? archivedOverride : s.archived,
+		};
+	});
+}
+
+const STATUSES: readonly SongStatus[] = ['cold', 'dusty', 'warm', 'green'];
+
+export function isStatus(value: unknown): value is SongStatus {
+	return typeof value === 'string' && (STATUSES as readonly string[]).includes(value);
 }
 
 export interface Counts {
@@ -85,10 +101,6 @@ export function computeCounts(active: Song[]): Counts {
 }
 
 /** Current songs that still need work, in queue order. */
-export function queue(active: Song[]): Song[] {
-	return active.filter((s) => !s.archived && s.status !== 'green');
-}
-
 interface Border {
 	/** Whether the row's archived flag matches the toggle. */
 	archivedMatches: boolean;

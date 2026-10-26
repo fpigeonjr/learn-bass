@@ -80,6 +80,61 @@ test.describe('dashboard', () => {
 		}
 	});
 
+	test('deep link filters the board on load', async ({ page }) => {
+		// Regression: the stat chips and the island are separate module scripts
+		// that run in document order, so pushing the initial filter through the
+		// cross-island bridge dropped it (boot call ran before the island
+		// existed). The island must parse #status= itself.
+		await page.goto('/learn-bass/#status=cold');
+		// A hash-only goto does NOT create a new document (it just fires
+		// hashchange), which would exercise the listener instead of the init
+		// path this test is about. Reload forces a real load.
+		await page.reload();
+		await page.waitForSelector('h1');
+
+		await expect(page.locator('.stat-mini[data-filter="cold"]')).toHaveClass(/is-active/);
+
+		// Derive the expected count from the chip so this doesn't rot when the
+		// setlist changes, then assert every visible row really is cold.
+		const coldCount = Number(await page.locator('#count-cold').textContent());
+		expect(coldCount).toBeGreaterThan(0);
+
+		const rows = page.locator('.board li:not([hidden])');
+		await expect(rows).toHaveCount(coldCount);
+		for (const row of await rows.all()) {
+			await expect(row.locator('.status')).toHaveAttribute('data-status', 'cold');
+		}
+	});
+
+	test('deep link survives a reload and ignores a junk value', async ({ page }) => {
+		await page.goto('/learn-bass/#status=dusty');
+		await page.reload(); // real document load, not a hashchange
+		await page.waitForSelector('h1');
+
+		// Assert the filter actually applied rather than comparing the state to
+		// itself: every visible row must be dusty, and it must be a real subset.
+		const dustyCount = Number(await page.locator('#count-dusty').textContent());
+		expect(dustyCount).toBeGreaterThan(0);
+		expect(dustyCount).toBeLessThan(14);
+
+		const rows = page.locator('.board li:not([hidden])');
+		await expect(rows).toHaveCount(dustyCount);
+		for (const row of await rows.all()) {
+			await expect(row.locator('.status')).toHaveAttribute('data-status', 'dusty');
+		}
+
+		await page.reload();
+		await page.waitForSelector('h1');
+		await expect(rows).toHaveCount(dustyCount);
+
+		// An unrecognized status must be ignored, not applied as a filter
+		// that matches nothing.
+		await page.goto('/learn-bass/#status=banana');
+		await page.reload();
+		await page.waitForSelector('h1');
+		await expect(page.locator('.board li:not([hidden])')).toHaveCount(14);
+	});
+
 	test('queue hero shows what to learn next', async ({ page }) => {
 		await expect(page.locator('#what-now .title')).toContainText('Currently learning');
 	});
@@ -189,7 +244,7 @@ test.describe('dashboard', () => {
 			await rows.nth(i).locator('[data-archive]').click();
 		}
 
-		await expect(page.locator('#gig-ready-pct')).toHaveText('100%');
+		await expect(page.locator('#green-pct')).toHaveText('100%');
 		await expect(page.locator('#count-archived')).toHaveText('7');
 		await expect(page.locator('#count-current')).toContainText('7');
 		// The `current` label must survive hydration: an earlier version set

@@ -1,4 +1,4 @@
-# Bass Gig-Readiness Resources
+# Bass Queue Resources
 
 ## Knowledge
 

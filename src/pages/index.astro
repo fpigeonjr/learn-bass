@@ -32,25 +32,20 @@ const initial = computeCounts(songs);
 	initWarmup();
 	listenWarmup();
 
-	// Stat-deck chips delegate filtering to the Tracker island, which owns
-	// view state. Writing row.hidden here as well would fight it.
-	let activeFilter: string | null = null;
-
-	function applyFilter() {
-		if (typeof window.__setStatusFilter === 'function') {
-			window.__setStatusFilter(activeFilter);
-		}
-	}
-
-	document.querySelectorAll('.stat-mini[data-filter]').forEach((chip) => {
+	// The Tracker island owns the status filter, including the initial value.
+	// It parses `#status=` itself on init: routing that through this script at
+	// boot is a one-way race, because module scripts run in document order and
+	// this one is emitted BEFORE the Tracker bundle (so the bridge is still
+	// undefined here and the deep-link is silently dropped).
+	//
+	// Chips therefore only forward *subsequent* clicks, and read the current
+	// state off the DOM rather than keeping a second copy of it.
+	document.querySelectorAll<HTMLElement>('.stat-mini[data-filter]').forEach((chip) => {
 		chip.addEventListener('click', () => {
-			activeFilter = activeFilter === chip.dataset.filter ? null : chip.dataset.filter;
-			applyFilter();
+			const next = chip.classList.contains('is-active') ? null : (chip.dataset.filter ?? null);
+			window.__setStatusFilter?.(next);
 		});
 	});
-	const hash = (location.hash || '').replace('#', '');
-	if (hash.startsWith('status=')) activeFilter = hash.slice(7);
-	applyFilter();
 </script>
 
 <main class="wrap">
@@ -76,8 +71,8 @@ const initial = computeCounts(songs);
 				<button class="stat-mini" data-filter="dusty" type="button"><i class="fret-dot yellow"></i><div class="num" id="count-dusty">{initial.byStatus.dusty}</div><div class="lbl">dusty</div><div class="sub">rusty</div></button>
 				<button class="stat-mini" data-filter="cold" type="button"><i class="fret-dot blue"></i><div class="num" id="count-cold">{initial.byStatus.cold}</div><div class="lbl">cold</div><div class="sub">not started</div></button>
 			</div>
-			<div class="stat-progress" aria-hidden="true"><span class="stat-progress-fill" id="gig-ready-fill" style={`width:${initial.greenPct}%`}></span></div>
-			<div class="stat-progress-lbl"><span id="gig-ready-pct">{initial.greenPct}%</span> of your current queue is green</div>
+			<div class="stat-progress" aria-hidden="true"><span class="stat-progress-fill" id="green-fill" style={`width:${initial.greenPct}%`}></span></div>
+			<div class="stat-progress-lbl"><span id="green-pct">{initial.greenPct}%</span> of your current queue is green</div>
 		</div>
 	</div>
 

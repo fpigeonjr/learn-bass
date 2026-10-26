@@ -4,7 +4,6 @@ import {
 	isVisible,
 	liveSongs,
 	loadState,
-	queue,
 	saveArchived,
 	saveStatus,
 	heroMessage,
@@ -119,17 +118,6 @@ describe('computeCounts', () => {
 		const counts = computeCounts([s({ slug: 'a', archived: true })]);
 		expect(counts.current).toBe(0);
 		expect(counts.greenPct).toBe(0);
-	});
-});
-
-describe('queue', () => {
-	it('lists non-green, non-archived songs only', () => {
-		const q = queue([
-			s({ slug: 'open', status: 'cold' }),
-			s({ slug: 'done', status: 'green' }),
-			s({ slug: 'shelved', status: 'cold', archived: true }),
-		]);
-		expect(q.map((x) => x.slug)).toEqual(['open']);
 	});
 });
 
@@ -252,7 +240,7 @@ describe('storage — persisted values', () => {
 	});
 });
 
-describe('heroMessage — output safety', () => {
+describe('heroMessage — output passthrough', () => {
 	const base = '/learn-bass/';
 
 	it('renders a hard part containing HTML-significant characters without truncating', () => {
@@ -290,5 +278,48 @@ describe('computeCounts — all-green edge case', () => {
 		expect(counts.greenPct).toBe(100);
 		expect(counts.archived).toBe(1);
 		expect(counts.current).toBe(2);
+	});
+});
+
+describe('liveSongs — untrusted override validation', () => {
+	it('ignores a status value that is not one of the four', () => {
+		// localStorage is user-writable; a junk value must not create a phantom
+		// status that vanishes from the counts, meter, and every chip.
+		const shipped = [s({ slug: 'a', status: 'warm' })];
+		const live = liveSongs(shipped, {
+			status: { a: 'banana' as never },
+			archived: {},
+		});
+		expect(live[0].status).toBe('warm');
+	});
+
+	it('keeps counts finite and complete when a junk status is stored', () => {
+		const shipped = [s({ slug: 'a', status: 'cold' }), s({ slug: 'b', status: 'warm' })];
+		const live = liveSongs(shipped, {
+			status: { a: 'banana' as never },
+			archived: {},
+		});
+		const counts = computeCounts(live);
+		expect(counts.current).toBe(2);
+		expect(counts.byStatus.cold).toBe(1);
+		expect(counts.byStatus.warm).toBe(1);
+		// No phantom key leaked into the byStatus map.
+		expect(Object.keys(counts.byStatus).sort()).toEqual(['cold', 'dusty', 'green', 'warm']);
+	});
+
+	it('ignores a non-boolean archived override', () => {
+		const shipped = [s({ slug: 'a', archived: false })];
+		const live = liveSongs(shipped, { status: {}, archived: { a: 'yes' as never } });
+		expect(live[0].archived).toBe(false);
+	});
+
+	it('ignores overrides for slugs that are no longer shipped', () => {
+		const shipped = [s({ slug: 'a', status: 'cold' })];
+		const live = liveSongs(shipped, {
+			status: { ghost: 'green' as never },
+			archived: { ghost: true },
+		});
+		expect(live).toHaveLength(1);
+		expect(computeCounts(live).current).toBe(1);
 	});
 });

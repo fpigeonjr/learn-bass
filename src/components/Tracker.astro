@@ -33,7 +33,13 @@ const statusOrder = ['cold', 'dusty', 'warm', 'green'] as const;
 				<div class="row-actions">
 					<div class="status" data-status={s.status}>
 						{statusOrder.map((st) => (
-							<button data-set={st}>{st}</button>
+							<button
+								data-set={st}
+								aria-pressed={String(s.status === st)}
+								aria-label={`Set ${s.title} to ${st}`}
+							>
+								{st}
+							</button>
 						))}
 					</div>
 					<button class="archive-btn" type="button" data-archive aria-pressed="false">
@@ -103,7 +109,9 @@ const statusOrder = ['cold', 'dusty', 'warm', 'green'] as const;
 			const statusEl = row.querySelector('.status')!;
 			statusEl.setAttribute('data-status', song.status);
 			row.querySelectorAll<HTMLElement>('.status button').forEach((b) => {
-				b.classList.toggle('active', b.dataset.set === song.status);
+				const on = b.dataset.set === song.status;
+				b.classList.toggle('active', on);
+				b.setAttribute('aria-pressed', String(on));
 			});
 
 			const badge = row.querySelector<HTMLElement>('[data-archive-badge]');
@@ -135,8 +143,8 @@ const statusOrder = ['cold', 'dusty', 'warm', 'green'] as const;
 			if (el) el.textContent = String(value);
 		}
 
-		const fill = document.getElementById('gig-ready-fill');
-		const pct = document.getElementById('gig-ready-pct');
+		const fill = document.getElementById('green-fill');
+		const pct = document.getElementById('green-pct');
 		if (fill) fill.style.width = `${greenPct}%`;
 		if (pct) pct.textContent = `${greenPct}%`;
 
@@ -182,10 +190,38 @@ const statusOrder = ['cold', 'dusty', 'warm', 'green'] as const;
 
 	// The dashboard's stat chips filter the board; they set this island's
 	// view state instead of mutating row.hidden themselves.
-	window.__setStatusFilter = (status: string | null) => {
-		view.statusFilter = status;
-		applyVisibility();
-	};
+	const VALID_STATUSES = ['cold', 'dusty', 'warm', 'green'];
 
+	/** Read `#status=<value>` from the URL, ignoring anything unrecognized. */
+	function parseHashStatus(): string | null {
+		const hash = (location.hash || '').replace(/^#/, '');
+		if (!hash.startsWith('status=')) return null;
+		const value = hash.slice('status='.length);
+		return VALID_STATUSES.includes(value) ? value : null;
+	}
+
+	/** Single writer for the filter: state, URL, and both views stay in step. */
+	function setStatusFilter(status: string | null) {
+		view.statusFilter = status;
+		// replaceState (not location.hash) so writing the URL does not fire a
+		// hashchange that bounces back through this same function.
+		const nextHash = status ? `#status=${status}` : '';
+		if ((location.hash || '') !== nextHash) {
+			history.replaceState(null, '', nextHash || location.pathname + location.search);
+		}
+		applyVisibility();
+	}
+
+	window.__setStatusFilter = setStatusFilter;
+
+	// Deep links, manual hash edits, and back/forward all funnel through here.
+	window.addEventListener('hashchange', () => {
+		view.statusFilter = parseHashStatus();
+		applyVisibility();
+	});
+
+	// Initialize from the URL *before* first paint of state, so a deep link
+	// arrives already filtered.
+	view.statusFilter = parseHashStatus();
 	applyState();
 </script>

@@ -6,9 +6,9 @@ function s(overrides: Partial<Song> & { slug: string }): Song {
 		title: overrides.slug,
 		artist: 'Test',
 		status: 'cold',
+		archived: false,
 		tier: 'core',
 		order: 1,
-		targetWeek: 1,
 		hardPart: 'hard',
 		hasLesson: true,
 		...overrides,
@@ -20,6 +20,12 @@ describe('songs data', () => {
 		expect(songs).toHaveLength(14);
 		expect(new Set(songs.map((x) => x.slug)).size).toBe(14);
 	});
+
+	it('ships every song archived: false so the user opts in', () => {
+		// Archive defaults must not encode guesses about what is already learned.
+		expect(songs.every((x) => x.archived === false)).toBe(true);
+	});
+
 	it('GIG_DATE is Oct 9 2026', () => {
 		expect(GIG_DATE.getFullYear()).toBe(2026);
 		expect(GIG_DATE.getMonth()).toBe(9); // 0-indexed
@@ -28,29 +34,38 @@ describe('songs data', () => {
 });
 
 describe('nextSong', () => {
-	it('returns null when all green', () => {
-		expect(nextSong(songs.map((x) => ({ ...x, status: 'green' as const })))).toBeNull();
+	it('reports all-green when every current song is green', () => {
+		expect(nextSong(songs.map((x) => ({ ...x, status: 'green' as const })))).toEqual({
+			kind: 'all-green',
+		});
 	});
+
 	it('prefers cold over dusty over warm', () => {
-		const active = [s({ slug: 'a', status: 'warm' }), s({ slug: 'b', status: 'dusty' }), s({ slug: 'c', status: 'cold' })];
-		expect(nextSong(active)!.slug).toBe('c');
+		const active = [
+			s({ slug: 'a', status: 'warm' }),
+			s({ slug: 'b', status: 'dusty' }),
+			s({ slug: 'c', status: 'cold' }),
+		];
+		const n = nextSong(active);
+		expect(n.kind === 'learning' && n.song.slug).toBe('c');
 	});
-	it('backup songs sort after core at same status', () => {
-		const active = [s({ slug: 'core', tier: 'core', status: 'cold' }), s({ slug: 'backup', tier: 'backup', status: 'cold' })];
-		expect(nextSong(active)!.slug).toBe('core');
+
+	it('breaks ties by source order rather than tier', () => {
+		const active = [
+			s({ slug: 'first', tier: 'backup', status: 'cold' }),
+			s({ slug: 'second', tier: 'core', status: 'cold' }),
+		];
+		const n = nextSong(active);
+		expect(n.kind === 'learning' && n.song.slug).toBe('first');
 	});
-	it('earlier targetWeek wins at same status+tier', () => {
-		const active = [s({ slug: 'w2', targetWeek: 2, status: 'cold' }), s({ slug: 'w1', targetWeek: 1, status: 'cold' })];
-		expect(nextSong(active)!.slug).toBe('w1');
-	});
-	it('real setlist: first open is Dancing Queen (coldest)', () => {
-		// Dancing Queen is cold core week1; ILS also cold but week1 tie - Dancing Queen wins by order? actually stable sort by tier then week; both core cold week1 so first in input wins after sort is stable? Check actual.
+
+	it('real setlist: first open is cold', () => {
 		const n = nextSong([...songs]);
-		expect(n).not.toBeNull();
-		// At least not green and not backup at top
-		expect(n!.tier).toBe('core');
+		expect(n.kind).toBe('learning');
+		expect(n.kind === 'learning' && n.song.status).toBe('cold');
 	});
-	it('empty array returns null', () => {
-		expect(nextSong([])).toBeNull();
+
+	it('empty array returns the empty state, not all-green', () => {
+		expect(nextSong([])).toEqual({ kind: 'empty' });
 	});
 });

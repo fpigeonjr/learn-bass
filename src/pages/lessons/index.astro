@@ -31,6 +31,7 @@ import { url } from '../../lib/url';
 							<div class="title">
 								{s.title}
 								{s.tier === 'backup' && <span class="badge backup">backup</span>}
+								{s.archived && <span class="badge archive">archived</span>}
 							</div>
 							<div class="artist">{s.artist}</div>
 						</div>

@@ -1,25 +1,27 @@
 ---
 import { songs } from '../data/songs';
 
-// Expose server data to the client script (avoids re-parsing / duplication).
-const initialSongs = songs;
-
-// Server render the board fresh; the script below hydrates state from localStorage.
-const STORAGE_KEY = 'learn-bass:status:v1';
 const statusOrder = ['cold', 'dusty', 'warm', 'green'] as const;
 ---
 
 <section class="card" id="tracker">
-	<h2>Setlist board</h2>
-	<p class="muted">Tap a status to update. Green = roots + groove + hooks from memory.</p>
+	<div class="board-head">
+		<h2>Setlist board</h2>
+		<label class="archive-toggle">
+			<input type="checkbox" id="show-archived" />
+			<span>Show archived</span>
+		</label>
+	</div>
+	<p class="muted">Tap a status to update. Green = roots + groove + hooks from memory. Archive a song to shelve it without losing its status.</p>
 	<ul class="board">
-		{songs.map((s, i) => (
-			<li data-slug={s.slug}>
+		{songs.map((s) => (
+			<li data-slug={s.slug} data-archived={String(s.archived)}>
 				<span class="order">{String(s.order).padStart(2, '0')}</span>
 				<div class="info">
 					<div class="title">
 						{s.title}
 						{s.tier === 'backup' && <span class="badge backup">backup</span>}
+						<span class="badge archive" data-archive-badge hidden>archived</span>
 					</div>
 					<div class="artist">
 						{s.artist}
@@ -28,115 +30,198 @@ const statusOrder = ['cold', 'dusty', 'warm', 'green'] as const;
 						)}
 					</div>
 				</div>
-				<div class="status" data-status={s.status}>
-					{statusOrder.map((st) => (
-						<button data-set={st}>{st}</button>
-					))}
+				<div class="row-actions">
+					<div class="status" data-status={s.status}>
+						{statusOrder.map((st) => (
+							<button
+								data-set={st}
+								aria-pressed={String(s.status === st)}
+								aria-label={`Set ${s.title} to ${st}`}
+							>
+								{st}
+							</button>
+						))}
+					</div>
+					<button class="archive-btn" type="button" data-archive aria-pressed="false">
+						Archive
+					</button>
 				</div>
 			</li>
 		))}
 	</ul>
 </section>
 
-<script define:vars={{ initialSongs, BASE: import.meta.env.BASE_URL }}>
-	// Plain JavaScript only — Astro <script> blocks do not strip TypeScript.
-	const SONGS = initialSongs;
-	const BASE_URL = BASE;
+<script>
+	import { songs } from '../data/songs';
+	import {
+		computeCounts,
+		heroMessage,
+		isVisible,
+		liveSongs,
+		loadState,
+		nextSong,
+		saveArchived,
+		saveStatus,
+	} from '../lib/queue';
 
-	const KEY = 'learn-bass:status:v1';
+	const BASE_URL = import.meta.env.BASE_URL;
 
-	// nextSong logic inlined (functions can't cross define:vars serialization).
-	const TIER_RANK = { cold: 0, dusty: 1, warm: 2, green: 99 };
-	function nextSong(active) {
-		const open = active.filter((s) => s.status !== 'green');
-		if (open.length === 0) return null;
-		open.sort((a, b) => {
-			if (TIER_RANK[a.status] !== TIER_RANK[b.status]) {
-				return TIER_RANK[a.status] - TIER_RANK[b.status];
-			}
-			if (a.tier !== b.tier) return a.tier === 'backup' ? 1 : -1;
-			return a.targetWeek - b.targetWeek;
-		});
-		return open[0];
+	// One view-state object so the two filter axes never write row.hidden
+	// independently (that was the old bug: each silently clobbered the other).
+	const view = { showArchived: false, statusFilter: null as string | null };
+
+	function currentSongs() {
+		return liveSongs(songs, loadState());
 	}
 
-	function load() {
-		try {
-			return JSON.parse(localStorage.getItem(KEY) || '{}');
-		} catch {
-			return {};
-		}
-	}
-
-	function save(state) {
-		localStorage.setItem(KEY, JSON.stringify(state));
-	}
-
-	function applyStatuses() {
-		const saved = load();
-		document.querySelectorAll('[data-slug]').forEach((li) => {
-			const slug = li.dataset.slug;
-			const status = saved[slug] || li.querySelector('.status')?.dataset.status || 'cold';
-			li.querySelector('.status').dataset.status = status;
-			li.querySelectorAll('button').forEach((b) => {
-				b.classList.toggle('active', b.dataset.set === status);
+	function applyVisibility() {
+		document.querySelectorAll<HTMLElement>('#tracker [data-slug]').forEach((row) => {
+			const archived = row.dataset.archived === 'true';
+			const status = row.querySelector('.status')?.getAttribute('data-status') ?? '';
+			row.hidden = !isVisible({
+				archivedMatches: view.showArchived || !archived,
+				statusMatches: !view.statusFilter || view.statusFilter === status,
 			});
 		});
-		renderNext();
-		renderCounts();
+		const board = document.getElementById('tracker');
+		if (board) board.dataset.filter = view.statusFilter ?? 'all';
+		syncChips();
 	}
 
-	function renderNext() {
+	function syncChips() {
+		document.querySelectorAll<HTMLElement>('.stat-mini[data-filter]').forEach((chip) => {
+			const on = chip.dataset.filter === view.statusFilter;
+			chip.classList.toggle('is-active', on);
+			chip.setAttribute('aria-pressed', String(on));
+		});
+	}
+
+	function applyState() {
+		const active = currentSongs();
+
+		document.querySelectorAll<HTMLElement>('#tracker [data-slug]').forEach((row) => {
+			const slug = row.dataset.slug!;
+			const song = active.find((s) => s.slug === slug);
+			if (!song) return;
+
+			row.dataset.archived = String(song.archived);
+
+			const statusEl = row.querySelector('.status')!;
+			statusEl.setAttribute('data-status', song.status);
+			row.querySelectorAll<HTMLElement>('.status button').forEach((b) => {
+				const on = b.dataset.set === song.status;
+				b.classList.toggle('active', on);
+				b.setAttribute('aria-pressed', String(on));
+			});
+
+			const badge = row.querySelector<HTMLElement>('[data-archive-badge]');
+			if (badge) badge.hidden = !song.archived;
+
+			const btn = row.querySelector<HTMLElement>('[data-archive]');
+			if (btn) {
+				btn.setAttribute('aria-pressed', String(song.archived));
+				btn.textContent = song.archived ? 'Unarchive' : 'Archive';
+			}
+		});
+
+		renderHero(active);
+		renderCounts(active);
+		applyVisibility();
+	}
+
+	function renderHero(active: ReturnType<typeof currentSongs>) {
 		const target = document.getElementById('what-now');
 		if (!target) return;
-		const state = load();
-		const active = SONGS.map((s) => ({ ...s, status: state[s.slug] || s.status }));
-		const next = nextSong(active);
-		if (!next) {
-			target.innerHTML =
-				'<span class="label">What now</span><div class="title">Full-set run 🎸</div><div class="artist">All songs green — play the whole set in running order.</div>';
+		target.innerHTML = heroMessage(nextSong(active), BASE_URL);
+	}
+
+	function renderCounts(active: ReturnType<typeof currentSongs>) {
+		const { byStatus, archived, current, greenPct } = computeCounts(active);
+
+		for (const [status, value] of Object.entries(byStatus)) {
+			const el = document.getElementById(`count-${status}`);
+			if (el) el.textContent = String(value);
+		}
+
+		const fill = document.getElementById('green-fill');
+		const pct = document.getElementById('green-pct');
+		if (fill) fill.style.width = `${greenPct}%`;
+		if (pct) pct.textContent = `${greenPct}%`;
+
+		const archiveCount = document.getElementById('count-archived');
+		if (archiveCount) archiveCount.textContent = String(archived);
+
+		// `#count-current` is `<span class="num">{n} <small>current</small></span>`:
+		// update only the leading number so the <small> label survives hydration.
+		const currentCount = document.getElementById('count-current');
+		if (currentCount) {
+			const small = currentCount.querySelector('small');
+			currentCount.textContent = String(current);
+			if (small) {
+				currentCount.append(' ', small);
+			}
+		}
+	}
+
+	document.getElementById('tracker')?.addEventListener('click', (event) => {
+		const target = event.target as HTMLElement;
+
+		const statusBtn = target.closest<HTMLElement>('.status button');
+		if (statusBtn) {
+			const slug = statusBtn.closest<HTMLElement>('[data-slug]')?.dataset.slug;
+			const status = statusBtn.dataset.set;
+			if (slug && status) saveStatus(slug, status as never);
+			applyState();
 			return;
 		}
-		const href = next.hasLesson ? `${BASE_URL}lessons/${next.slug}/` : `${BASE_URL}lessons/`;
-		target.innerHTML =
-			`<span class="label">What now</span><div class="title">Next: ${next.title}</div>` +
-			`<div class="artist">Work the <strong>${next.hardPart}</strong> — <a href="${href}">open the lesson</a>.</div>`;
-	}
 
-	function renderCounts() {
-		const state = load();
-		const counts = { cold: 0, dusty: 0, warm: 0, green: 0 };
-		SONGS.forEach((s) => {
-			const st = state[s.slug] || s.status;
-			counts[st] = (counts[st] || 0) + 1;
-		});
-		Object.entries(counts).forEach(([k, v]) => {
-			const el = document.getElementById('count-' + k);
-			if (el) el.textContent = String(v);
-		});
-		// Gig-ready progress meter.
-		const total = SONGS.length || 1;
-		const pct = Math.round((counts.green / total) * 100);
-		const fill = document.getElementById('gig-ready-fill');
-		const lbl = document.getElementById('gig-ready-pct');
-		if (fill) fill.style.width = pct + '%';
-		if (lbl) lbl.textContent = pct + '%';
-		// Re-apply any active status filter so rows stay in sync after updates.
-		if (typeof window.__applyStatFilter === 'function') window.__applyStatFilter();
-	}
-
-	document.querySelectorAll('.status').forEach((group) => {
-		group.addEventListener('click', (e) => {
-			const btn = e.target.closest('button');
-			if (!btn) return;
-			const slug = group.closest('[data-slug]').dataset.slug;
-			const status = btn.dataset.set;
-			const state = load();
-			state[slug] = status;
-			save(state);
-			applyStatuses();
-		});
+		const archiveBtn = target.closest<HTMLElement>('[data-archive]');
+		if (archiveBtn) {
+			const row = archiveBtn.closest<HTMLElement>('[data-slug]');
+			if (row?.dataset.slug) saveArchived(row.dataset.slug, row.dataset.archived !== 'true');
+			applyState();
+		}
 	});
 
-	applyStatuses();
+	document.getElementById('show-archived')?.addEventListener('change', (event) => {
+		view.showArchived = (event.target as HTMLInputElement).checked;
+		applyVisibility();
+	});
+
+	// The dashboard's stat chips filter the board; they set this island's
+	// view state instead of mutating row.hidden themselves.
+	const VALID_STATUSES = ['cold', 'dusty', 'warm', 'green'];
+
+	/** Read `#status=<value>` from the URL, ignoring anything unrecognized. */
+	function parseHashStatus(): string | null {
+		const hash = (location.hash || '').replace(/^#/, '');
+		if (!hash.startsWith('status=')) return null;
+		const value = hash.slice('status='.length);
+		return VALID_STATUSES.includes(value) ? value : null;
+	}
+
+	/** Single writer for the filter: state, URL, and both views stay in step. */
+	function setStatusFilter(status: string | null) {
+		view.statusFilter = status;
+		// replaceState (not location.hash) so writing the URL does not fire a
+		// hashchange that bounces back through this same function.
+		const nextHash = status ? `#status=${status}` : '';
+		if ((location.hash || '') !== nextHash) {
+			history.replaceState(null, '', nextHash || location.pathname + location.search);
+		}
+		applyVisibility();
+	}
+
+	window.__setStatusFilter = setStatusFilter;
+
+	// Deep links, manual hash edits, and back/forward all funnel through here.
+	window.addEventListener('hashchange', () => {
+		view.statusFilter = parseHashStatus();
+		applyVisibility();
+	});
+
+	// Initialize from the URL *before* first paint of state, so a deep link
+	// arrives already filtered.
+	view.statusFilter = parseHashStatus();
+	applyState();
 </script>

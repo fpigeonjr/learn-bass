@@ -47,6 +47,19 @@ test.describe('whole app', () => {
     await expect(page.locator('.board li')).toHaveCount(14);
   });
 
+  test('static pages list archived songs rather than hiding them', async ({ page }) => {
+    // Every song ships `archived: false`, so the badge must not appear by
+    // default. The important invariant is the inverse: archiving is a display
+    // scope, never a deletion, so the static list keeps all 14 rows and the
+    // lesson routes keep resolving (see getStaticPaths in [slug].astro).
+    await page.goto('/learn-bass/lessons/');
+    await expect(page.locator('.badge.archive')).toHaveCount(0);
+    await expect(page.locator('.board li')).toHaveCount(15); // 14 songs + orientation
+
+    await page.goto('/learn-bass/reference/setlist/');
+    await expect(page.locator('.badge.archive')).toHaveCount(0);
+  });
+
   test('unknown lesson returns 404', async ({ page }) => {
     const res = await page.goto('/learn-bass/lessons/nonexistent-slug-xyz/');
     // Astro static build: unknown slug not in getStaticPaths => 404

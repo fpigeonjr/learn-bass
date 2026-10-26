@@ -4,20 +4,48 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout title="About">
 	<main class="wrap">
-		<h1>About this course</h1>
+		<h1>About this queue</h1>
 		<p class="lead">
-			A seven-week, single-person course to get Frank gig-ready on bass for a Friday-night reunion show — from memory, in time, and without panic.
+			A single-person bass practice queue: the songs I already know, kept fresh, plus the ones I'm learning now.
 		</p>
 
 		<div class="card">
-			<h2>The mission</h2>
-			<p>Play the full set on <strong>October 9, 2026 at Canyon Lake</strong> — all 7 core songs (plus 2 backups) — through from memory at gig tempo, hitting the signature hooks, and enjoying it.</p>
-			<p>A song is <strong>green</strong> when you can play its roots and groove in time from memory, plus the recognizable hooks. Fills are stretch, not required.</p>
+			<h2>Where it came from</h2>
+			<p>
+				This started as a seven-week sprint to a reunion gig with the G6 band on
+				<strong>October 9, 2026 at Canyon Lake</strong>. That gig is done, so the course
+				has been retooled into a standing queue rather than a one-shot countdown.
+			</p>
+		</div>
+
+		<div class="card">
+			<h2>How the queue works</h2>
+			<p>
+				Each song has a <strong>status</strong> — <strong>cold</strong> (not started),
+				<strong>dusty</strong> (rusty), <strong>warm</strong> (needs reps), or
+				<strong>green</strong> (solid: roots and groove in time from memory, plus the
+				recognizable hooks — fills are stretch, not required).
+			</p>
+			<p>
+				Separately, a song can be <strong>archived</strong>. Archiving shelves a song
+				without destroying its status: unarchive it and it comes back exactly where it
+				was. Archived songs drop out of the queue, the status counts, and the progress
+				meter, so the dashboard always answers "how is my active queue doing."
+			</p>
+			<p>
+				"What now" points at the lowest-status song still in rotation, breaking ties by
+				the order songs are listed. Nothing archived ever surfaces as work.
+			</p>
 		</div>
 
 		<div class="card">
 			<h2>How it's built</h2>
-			<p>Course content is authored in Markdown/HTML under the hood, then served as a static site via GitHub Pages. The dashboard uses a small bit of client-side script to track your song status and "what to work next" in your own browser — nothing leaves the device.</p>
+			<p>
+				Course content is authored in Markdown/HTML under the hood, then served as a
+				static site via GitHub Pages. The dashboard uses a small bit of client-side
+				script to track song status and archive state in your own browser — nothing
+				leaves the device. The trade-off: clearing site data resets the queue.
+			</p>
 		</div>
 	</main>
 </Layout>
